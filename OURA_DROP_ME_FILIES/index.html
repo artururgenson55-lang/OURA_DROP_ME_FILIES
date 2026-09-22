@@ -581,11 +581,9 @@ input[type="number"]{-moz-appearance:textfield}
   .avatar-lg{width:84px;height:84px;border-radius:24px;font-size:30px}
   .profile-body{margin-top:-38px}
   .role-choice{grid-template-columns:1fr}
-  /* Статистика: допускаем перенос, если не хватает места на 3 колонки */
   .stat-grid{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
 }
 @media (max-width:520px){
-  /* Статистика: на узких экранах — вертикальная колонка */
   .stat-grid{grid-template-columns:1fr;gap:10px}
   .stat{padding:16px}
   .stat b{font-size:22px}
@@ -933,6 +931,76 @@ const OAUTH = {
   'Apple ID':  { color:'#111111', icon:'apple',  domain:'icloud.com', names:['Екатерина Лебедева','Никита Орлов','Ольга Зайцева','Артём Белов'] },
   'Huawei ID': { color:'#2E6BE6', icon:'huawei', domain:'huawei.com', names:['Тимур Ахметов','Лилия Гафарова','Рустам Юсупов','Алина Насырова'] },
 };
+
+/* ====== ЯНДЕКС OAuth 2.0 (implicit flow) ====== */
+const YANDEX_CLIENT_ID = '7a7ea9443d6e4fd9af520fa3523d324e';
+const YANDEX_REDIRECT_URI = 'https://oura-drop-me-filies.onrender.com/';
+
+function startYandexAuth() {
+  const url = 'https://oauth.yandex.ru/authorize'
+    + '?response_type=token'
+    + '&client_id=' + encodeURIComponent(YANDEX_CLIENT_ID)
+    + '&redirect_uri=' + encodeURIComponent(YANDEX_REDIRECT_URI);
+  window.location.href = url;
+}
+
+async function handleYandexCallback() {
+  const hash = window.location.hash.substring(1);
+  if (!hash) return false;
+
+  const params = {};
+  hash.split('&').forEach(pair => {
+    const i = pair.indexOf('=');
+    if (i === -1) return;
+    const k = decodeURIComponent(pair.slice(0, i));
+    const v = decodeURIComponent(pair.slice(i + 1));
+    params[k] = v;
+  });
+
+  if (!params.access_token && !params.error) return false;
+
+  // Немедленно очищаем URL от токена
+  history.replaceState({}, document.title,
+    window.location.pathname + window.location.search);
+
+  if (params.error) {
+    toast('Яндекс: ' + (params.error_description || params.error), 'err');
+    return true;
+  }
+
+  try {
+    const res = await fetch('https://login.yandex.ru/info?format=json', {
+      headers: { 'Authorization': 'OAuth ' + params.access_token }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const y = await res.json();
+
+    const yandexId = String(y.id || '');
+    const name = y.real_name
+      || [y.first_name, y.last_name].filter(Boolean).join(' ')
+      || y.login
+      || 'Пользователь Яндекс';
+    let email = y.default_email || '';
+    if (!email && Array.isArray(y.emails) && y.emails.length) email = y.emails[0];
+    if (!email) email = (y.login || 'user') + '@yandex.ru';
+
+    const existing = state.registry.find(u => u.yandexId === yandexId);
+    if (existing) {
+      const full = state.user && state.user.id === existing.id
+        ? state.user
+        : { id: existing.id, name: existing.name, email: existing.email,
+            provider: 'Яндекс', registeredAt: Date.now(), yandexId };
+      signIn(full, false);
+    } else {
+      signIn(registerUser({ name, email, provider: 'Яндекс', yandexId }), true);
+    }
+    return true;
+  } catch (err) {
+    toast('Ошибка Яндекс: ' + err.message, 'err');
+    return true;
+  }
+}
+
 const TRANSLIT = {а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'e',ж:'zh',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'c',ч:'ch',ш:'sh',щ:'sch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya'};
 const translit = s => s.toLowerCase().split('').map(c => TRANSLIT[c] ?? c).join('');
 
@@ -1033,6 +1101,16 @@ function openAuthModal(mode) {
   overlay.querySelectorAll('[data-oauth]').forEach(btn => {
     btn.addEventListener('click', () => {
       const p = btn.dataset.oauth;
+
+      /* ====== ЯНДЕКС: настоящий OAuth 2.0 ====== */
+      if (p === 'Яндекс') {
+        btn.style.opacity = '.6';
+        close();
+        setTimeout(startYandexAuth, 220);
+        return;
+      }
+
+      /* ====== Остальные провайдеры: прежняя демо-логика ====== */
       const o = OAUTH[p];
       const name = o.names[Math.floor(Math.random() * o.names.length)];
       const email = translit(name).replace(/\s+/g, '.') + '@' + o.domain;
@@ -1081,7 +1159,7 @@ function openAuthModal(mode) {
   });
 }
 
-function registerUser({ name, email, provider }) {
+function registerUser({ name, email, provider, yandexId }) {
   const user = {
     id: ++state.seq,
     name: name || 'Пользователь',
@@ -1089,7 +1167,10 @@ function registerUser({ name, email, provider }) {
     provider: provider || 'Email',
     registeredAt: Date.now(),
   };
-  state.registry.push({ id: user.id, name: user.name, email: user.email });
+  if (yandexId) user.yandexId = yandexId;
+  const reg = { id: user.id, name: user.name, email: user.email };
+  if (yandexId) reg.yandexId = yandexId;
+  state.registry.push(reg);
   return user;
 }
 
@@ -1337,8 +1418,6 @@ function viewProject(id) {
 
   const files = state.files.filter(f => f.projectId === p.id).sort((a, b) => b.uploadedAt - a.uploadedAt);
   const isAdmin = p.adminId === state.user.id;
-
-  /* === Блок статистики: значения пересчитываются на каждом рендере === */
   const totalSize = files.reduce((s, f) => s + (f.size || 0), 0);
   const filesCount = files.length;
   const membersCount = p.members.length;
@@ -2053,9 +2132,15 @@ setInterval(() => {
 /* ============================================================
    16. СТАРТ
    ============================================================ */
-(function boot() {
+(async function boot() {
   applyTheme();
   renderBadge();
+
+  /* 1. Проверяем, вернулся ли пользователь с Яндекс-авторизации */
+  const handled = await handleYandexCallback();
+  if (handled) return; /* signIn() уже переключил экран */
+
+  /* 2. Обычный старт */
   if (state.user) {
     updateUserUI();
     showScreen('app');
