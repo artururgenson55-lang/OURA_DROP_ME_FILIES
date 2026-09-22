@@ -934,6 +934,7 @@ const OAUTH = {
 
 /* ====== ЯНДЕКС OAuth 2.0 (implicit flow) ====== */
 const YANDEX_CLIENT_ID = '7a7ea9443d6e4fd9af520fa3523d324e';
+const YANDEX_CLIENT_SECRET = 'b9089343b8f84a9388388c8486716747'; /* НЕ используется: implicit flow не требует секрета */
 const YANDEX_REDIRECT_URI = 'https://oura-drop-me-filies.onrender.com/';
 
 function startYandexAuth() {
@@ -959,7 +960,7 @@ async function handleYandexCallback() {
 
   if (!params.access_token && !params.error) return false;
 
-  // Немедленно очищаем URL от токена
+  /* Немедленно очищаем URL от токена */
   history.replaceState({}, document.title,
     window.location.pathname + window.location.search);
 
@@ -986,7 +987,7 @@ async function handleYandexCallback() {
 
     const existing = state.registry.find(u => u.yandexId === yandexId);
     if (existing) {
-      const full = state.user && state.user.id === existing.id
+      const full = (state.user && state.user.id === existing.id)
         ? state.user
         : { id: existing.id, name: existing.name, email: existing.email,
             provider: 'Яндекс', registeredAt: Date.now(), yandexId };
