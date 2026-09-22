@@ -804,11 +804,14 @@ const initials = n => (n || 'U').trim().split(/\s+/).map(w => w[0]).slice(0, 2).
    2. СОСТОЯНИЕ
    ============================================================ */
 const KEY = 'oura_drop_me_files_v1';
+const SEQ_KEY = 'oura_drop_me_files_seq_v1';   // отдельный ключ для счётчика ID
+const SEQ_START = 1040;                        // базовый ID (первый зарегистрированный получит 1041)
+
 const state = {
   theme: 'dark',
   user: null,
   registry: [],
-  seq: 1040,
+  seq: SEQ_START,
   files: [],
   projects: [],
   notifications: [],
@@ -834,6 +837,22 @@ function load() {
   } catch (e) {}
 }
 load();
+
+/* Отдельный счётчик ID — не теряется при сбое основного хранилища */
+function loadSeq() {
+  try {
+    const raw = localStorage.getItem(SEQ_KEY);
+    if (raw) {
+      const n = parseInt(raw, 10);
+      if (Number.isFinite(n) && n > state.seq) state.seq = n;
+    }
+  } catch (e) {}
+  if (!Number.isFinite(state.seq) || state.seq < SEQ_START) state.seq = SEQ_START;
+}
+function saveSeq() {
+  try { localStorage.setItem(SEQ_KEY, String(state.seq)); } catch (e) {}
+}
+loadSeq();
 
 function applyTheme() {
   document.documentElement.setAttribute('data-theme', state.theme);
@@ -933,8 +952,8 @@ const OAUTH = {
 };
 
 /* ====== ЯНДЕКС OAuth 2.0 (implicit flow) ====== */
-const YANDEX_CLIENT_ID = 'b9089343b8f84a9388388c8486716747'; // ✅ Это ваш настоящий Client ID
-const YANDEX_REDIRECT_URI = 'https://oura-drop-me-filies.onrender.com/'; // ✅ Совпадает с настройками
+const YANDEX_CLIENT_ID = '7a7ea9443d6e4fd9af520fa3523d324e';
+const YANDEX_REDIRECT_URI = 'https://oura-drop-me-filies.onrender.com/';
 
 function startYandexAuth() {
   const url = 'https://oauth.yandex.ru/authorize'
@@ -988,7 +1007,8 @@ async function handleYandexCallback() {
     if (existing) {
       const full = (state.user && state.user.id === existing.id)
         ? state.user
-        : { id: existing.id, name: existing.name, email: existing.email,
+        : { id: existing.id, userNumber: existing.userNumber,
+            name: existing.name, email: existing.email,
             provider: 'Яндекс', registeredAt: Date.now(), yandexId };
       signIn(full, false);
     } else {
@@ -1160,17 +1180,32 @@ function openAuthModal(mode) {
 }
 
 function registerUser({ name, email, provider, yandexId }) {
+  // 1. Авто-генерация уникального ID
+  state.seq = state.seq + 1;
+  saveSeq();
+
+  // 2. Номер регистрации = позиция в реестре (1-й, 2-й, 3-й зарегистрированный)
+  const userNumber = state.registry.length + 1;
+
   const user = {
-    id: ++state.seq,
+    id: state.seq,          // уникальный ID, например 1041, 1042, ...
+    userNumber: userNumber, // порядковый номер регистрации: 1, 2, 3, ...
     name: name || 'Пользователь',
     email: email || 'user@example.com',
     provider: provider || 'Email',
     registeredAt: Date.now(),
   };
   if (yandexId) user.yandexId = yandexId;
-  const reg = { id: user.id, name: user.name, email: user.email };
+
+  const reg = {
+    id: user.id,
+    userNumber: user.userNumber,
+    name: user.name,
+    email: user.email,
+  };
   if (yandexId) reg.yandexId = yandexId;
   state.registry.push(reg);
+  save();
   return user;
 }
 
@@ -1178,7 +1213,7 @@ function signIn(user, isNew) {
   state.user = user;
   if (isNew) {
     state.notifications = [
-      { id: uid(), type:'access',  title:'Добро пожаловать!', text:`Ваш аккаунт создан. Ваш ID — #${user.id}. Сохраните его, чтобы получать доступ к проектам.`, ts: Date.now() - 4000, read: false },
+      { id: uid(), type:'access',  title:'Добро пожаловать!', text:`Ваш аккаунт создан. Ваш ID — #${user.id}. Вы ${user.userNumber || 1}-й зарегистрированный пользователь на сайте. Сохраните ID, чтобы получать доступ к проектам.`, ts: Date.now() - 4000, read: false },
       { id: uid(), type:'login',   title:'Вход в аккаунт',    text:`Выполнен вход через ${user.provider}. Если это были не вы — смените пароль.`, ts: Date.now() - 2000, read: false },
       { id: uid(), type:'project', title:'Совет дня',         text:'Объединяйте файлы в проекты и приглашайте участников по ID.', ts: Date.now() - 60000, read: true },
     ];
@@ -1610,6 +1645,7 @@ function viewProfile() {
       <div class="info-list">
         <div class="info-row"><span class="k">${icon('mail', 16)} Email</span><span class="v">${esc(u.email)}</span></div>
         <div class="info-row"><span class="k">${icon('shield', 16)} ID пользователя</span><span class="v">#${u.id}</span></div>
+        <div class="info-row"><span class="k">${icon('user', 16)} Номер регистрации</span><span class="v">${u.userNumber ? u.userNumber + '-й на сайте' : '—'}</span></div>
         <div class="info-row"><span class="k">${icon('user', 16)} Способ входа</span><span class="v">${esc(u.provider)}</span></div>
         <div class="info-row"><span class="k">${icon('cal', 16)} Дата регистрации</span><span class="v">${fmtDate(u.registeredAt)}</span></div>
         <div class="info-row"><span class="k">${icon('clock', 16)} Последний вход</span><span class="v">${fmtDateTime(Date.now())}</span></div>
