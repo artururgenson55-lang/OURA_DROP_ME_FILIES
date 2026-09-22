@@ -933,9 +933,8 @@ const OAUTH = {
 };
 
 /* ====== ЯНДЕКС OAuth 2.0 (implicit flow) ====== */
-const YANDEX_CLIENT_ID = '7a7ea9443d6e4fd9af520fa3523d324e';
-const YANDEX_CLIENT_SECRET = 'b9089343b8f84a9388388c8486716747'; /* НЕ используется: implicit flow не требует секрета */
-const YANDEX_REDIRECT_URI = 'https://oura-drop-me-filies.onrender.com/';
+const YANDEX_CLIENT_ID = 'b9089343b8f84a9388388c8486716747'; // ✅ Это ваш настоящий Client ID
+const YANDEX_REDIRECT_URI = 'https://oura-drop-me-filies.onrender.com/'; // ✅ Совпадает с настройками
 
 function startYandexAuth() {
   const url = 'https://oauth.yandex.ru/authorize'
