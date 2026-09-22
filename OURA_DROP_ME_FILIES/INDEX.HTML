@@ -1,0 +1,2069 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OURA DROP ME FILES</title>
+<style>
+/* ============================================================
+   1. БАЗА И ПЕРЕМЕННЫЕ ТЕМ
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --r-sm:10px; --r:14px; --r-lg:20px; --r-xl:26px;
+  --t:.22s cubic-bezier(.4,0,.2,1);
+  --t-slow:.38s cubic-bezier(.22,1,.36,1);
+  --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+}
+html[data-theme="dark"]{
+  --bg:#080a0f; --bg-soft:#0c0f16;
+  --surface:#11141d; --surface-2:#171b26; --surface-3:#1f2533;
+  --border:rgba(255,255,255,.08); --border-2:rgba(255,255,255,.18);
+  --text:#eef1f8; --dim:#98a1b6; --mute:#69718a;
+  --accent:#7c6cf5; --accent-2:#2ec5ff; --accent-soft:rgba(124,108,245,.14);
+  --danger:#ff5c6c; --danger-soft:rgba(255,92,108,.13);
+  --success:#2fd18b; --warn:#ffb454;
+  --shadow:0 16px 40px rgba(0,0,0,.5);
+  --shadow-sm:0 6px 18px rgba(0,0,0,.35);
+  --glass:rgba(17,20,29,.82);
+  --input-bg:#0f131c;
+}
+html[data-theme="light"]{
+  --bg:#f2f4fa; --bg-soft:#e9ecf6;
+  --surface:#ffffff; --surface-2:#f6f7fc; --surface-3:#eef0f8;
+  --border:rgba(16,20,40,.10); --border-2:rgba(16,20,40,.22);
+  --text:#121729; --dim:#5c6480; --mute:#8b93ab;
+  --accent:#6552e8; --accent-2:#0aa8e0; --accent-soft:rgba(101,82,232,.10);
+  --danger:#e8384f; --danger-soft:rgba(232,56,79,.10);
+  --success:#12a86a; --warn:#d98a12;
+  --shadow:0 16px 40px rgba(28,35,70,.14);
+  --shadow-sm:0 6px 18px rgba(28,35,70,.09);
+  --glass:rgba(255,255,255,.85);
+  --input-bg:#ffffff;
+}
+html,body{height:100%}
+body{
+  margin:0;font-family:var(--font);background:var(--bg);color:var(--text);
+  -webkit-font-smoothing:antialiased;overflow:hidden;
+  transition:background var(--t),color var(--t);
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none;padding:0}
+a{color:inherit;text-decoration:none}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:20px;border:3px solid transparent;background-clip:content-box}
+::-webkit-scrollbar-thumb:hover{background:var(--mute);background-clip:content-box;border:3px solid transparent}
+::-webkit-scrollbar-track{background:transparent}
+.ic{flex-shrink:0;display:block}
+
+/* ============================================================
+   2. ЭКРАНЫ
+   ============================================================ */
+.screen{position:fixed;inset:0;display:none;opacity:0}
+.screen.active{display:block;opacity:1;animation:fadeIn .4s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ---------- ЛЕНДИНГ ---------- */
+#screen-landing{
+  overflow:auto;
+  background:
+    radial-gradient(900px 600px at 12% -10%, var(--accent-soft), transparent 70%),
+    radial-gradient(800px 600px at 92% 110%, rgba(46,197,255,.13), transparent 70%),
+    var(--bg);
+}
+.orb{position:fixed;border-radius:50%;filter:blur(90px);opacity:.5;pointer-events:none;z-index:0}
+.orb.o1{width:420px;height:420px;background:var(--accent);top:-140px;left:-120px;animation:float1 18s ease-in-out infinite}
+.orb.o2{width:360px;height:360px;background:var(--accent-2);bottom:-140px;right:-100px;animation:float2 22s ease-in-out infinite}
+.orb.o3{width:280px;height:280px;background:#ff5c9d;top:45%;left:55%;opacity:.22;animation:float1 26s ease-in-out infinite reverse}
+@keyframes float1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(60px,50px) scale(1.15)}}
+@keyframes float2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-70px,-40px) scale(1.1)}}
+.landing-inner{
+  position:relative;z-index:1;min-height:100%;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:32px 20px 70px;text-align:center;gap:24px;
+}
+.brand-logo{
+  font-size:clamp(30px,7.2vw,74px);font-weight:900;letter-spacing:-.03em;line-height:.98;
+  text-transform:uppercase;display:flex;flex-wrap:wrap;justify-content:center;gap:0 .28em;margin:0;
+}
+.brand-logo span{
+  background:linear-gradient(120deg,var(--text) 10%,var(--accent) 50%,var(--accent-2) 95%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:logoIn .8s cubic-bezier(.22,1,.36,1) both;
+}
+.brand-logo span:nth-child(1){animation-delay:.05s}
+.brand-logo span:nth-child(2){animation-delay:.13s}
+.brand-logo span:nth-child(3){animation-delay:.21s}
+.brand-logo span:nth-child(4){animation-delay:.29s}
+@keyframes logoIn{from{opacity:0;transform:translateY(22px) rotateX(-40deg)}to{opacity:1;transform:none}}
+.landing-badge{
+  display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:100px;
+  border:1px solid var(--border);background:var(--glass);backdrop-filter:blur(14px);
+  font-size:13px;color:var(--dim);animation:fadeIn .6s .3s both;
+}
+.landing-badge .pulse{width:7px;height:7px;border-radius:50%;background:var(--success);box-shadow:0 0 0 0 var(--success);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,209,139,.6)}70%{box-shadow:0 0 0 9px rgba(47,209,139,0)}100%{box-shadow:0 0 0 0 rgba(47,209,139,0)}}
+.landing-desc{max-width:600px;font-size:clamp(14px,2.4vw,17px);line-height:1.65;color:var(--dim);animation:fadeIn .6s .4s both;margin:0}
+.landing-actions{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;animation:fadeIn .6s .5s both}
+.landing-stats{display:flex;gap:34px;flex-wrap:wrap;justify-content:center;margin-top:6px;animation:fadeIn .6s .6s both}
+.lstat b{display:block;font-size:clamp(20px,3.6vw,28px);font-weight:800;letter-spacing:-.02em}
+.lstat span{font-size:12px;color:var(--mute);text-transform:uppercase;letter-spacing:.09em}
+.landing-foot{position:fixed;bottom:16px;left:0;right:0;text-align:center;font-size:12px;color:var(--mute);z-index:1}
+
+/* ============================================================
+   3. КНОПКИ
+   ============================================================ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  padding:12px 22px;border-radius:var(--r);font-weight:600;font-size:14.5px;
+  transition:transform var(--t),box-shadow var(--t),background var(--t),border-color var(--t),opacity var(--t);
+  white-space:nowrap;border:1px solid transparent;position:relative;
+}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(120deg,var(--accent),var(--accent-2));color:#fff;box-shadow:0 10px 26px -8px var(--accent)}
+.btn-primary:hover{box-shadow:0 14px 34px -8px var(--accent);transform:translateY(-2px)}
+.btn-ghost{border-color:var(--border-2);color:var(--text);background:transparent}
+.btn-ghost:hover{background:var(--surface-2);border-color:var(--accent)}
+.btn-soft{background:var(--surface-3);color:var(--text);border-color:transparent;padding:9px 15px;font-size:13.5px;border-radius:var(--r-sm)}
+.btn-soft:hover{background:var(--accent-soft);color:var(--accent)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{filter:brightness(1.08);transform:translateY(-2px)}
+.btn-block{width:100%}
+.btn-icon{
+  width:38px;height:38px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;
+  color:var(--dim);transition:background var(--t),color var(--t),transform var(--t);flex-shrink:0;
+}
+.btn-icon:hover{background:var(--surface-3);color:var(--text)}
+.btn-icon:active{transform:scale(.92)}
+.btn-icon.danger:hover{background:var(--danger-soft);color:var(--danger)}
+.btn-text{font-size:13px;color:var(--dim);padding:6px 8px;border-radius:8px;font-weight:600;transition:color var(--t),background var(--t)}
+.btn-text:hover{color:var(--text);background:var(--surface-3)}
+.btn-text.danger:hover{color:var(--danger);background:var(--danger-soft)}
+
+/* ============================================================
+   4. МОДАЛЬНОЕ ОКНО АВТОРИЗАЦИИ
+   ============================================================ */
+.auth-overlay{
+  position:fixed;inset:0;z-index:9999;display:flex;padding:20px 16px;
+  background:rgba(4,6,12,.7);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  opacity:0;transition:opacity .25s ease;overflow-y:auto;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.auth-overlay.show{opacity:1}
+.auth-modal{
+  position:relative;width:100%;max-width:440px;margin:auto;
+  background:var(--surface);border:1px solid var(--border-2);border-radius:var(--r-xl);
+  padding:30px 24px 24px;
+  box-shadow:0 30px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.04) inset;
+  transform:translateY(18px) scale(.97);opacity:0;
+  transition:transform .32s cubic-bezier(.22,1,.36,1), opacity .3s ease;
+}
+.auth-overlay.show .auth-modal{transform:none;opacity:1}
+.auth-close{
+  position:absolute;top:14px;right:14px;width:36px;height:36px;border-radius:11px;
+  display:grid;place-items:center;color:var(--dim);background:var(--surface-2);
+  border:1px solid var(--border);transition:background var(--t),color var(--t),transform var(--t);z-index:2;
+}
+.auth-close:hover{background:var(--danger-soft);color:var(--danger);transform:rotate(90deg)}
+.auth-modal h2{margin:0 0 6px;padding-right:44px;font-size:24px;font-weight:800;letter-spacing:-.025em}
+.auth-modal .auth-sub{margin:0 0 22px;color:var(--dim);font-size:13.5px;line-height:1.5}
+.oauth-grid{display:flex;flex-direction:column;gap:10px}
+.oauth-btn{
+  display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;border-radius:var(--r);
+  background:var(--surface-2);border:1px solid var(--border);font-weight:600;font-size:14px;
+  transition:transform var(--t),border-color var(--t),background var(--t);text-align:left;color:var(--text);
+}
+.oauth-btn:hover{transform:translateY(-2px);border-color:var(--border-2);background:var(--surface-3)}
+.oauth-btn:active{transform:scale(.985)}
+.oauth-dot{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;font-size:11px;font-weight:900;color:#fff;line-height:1}
+.divider{display:flex;align-items:center;gap:14px;margin:20px 0;color:var(--mute);font-size:12px;text-transform:uppercase;letter-spacing:.1em}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+.divider span{white-space:nowrap}
+
+/* ============================================================
+   5. УНИВЕРСАЛЬНЫЕ СТИЛИ ПОЛЕЙ ВВОДА
+   ============================================================ */
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="hidden"]),
+select,
+textarea{
+  width:100%;
+  padding:12px 15px;
+  border-radius:var(--r-sm);
+  background-color:var(--input-bg);
+  border:1.5px solid var(--border-2);
+  outline:none;
+  font-family:inherit;
+  font-size:14.5px;
+  line-height:1.45;
+  color:var(--text);
+  transition:border-color var(--t), box-shadow var(--t), background-color var(--t);
+  -webkit-appearance:none;
+  appearance:none;
+  box-shadow:none;
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="hidden"])::placeholder,
+textarea::placeholder{
+  color:var(--mute);
+  opacity:1;
+  transition:color var(--t);
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="hidden"]):hover:not(:focus),
+select:hover:not(:focus),
+textarea:hover:not(:focus){
+  border-color:var(--border-2);
+  background-color:var(--surface-2);
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="hidden"]):focus,
+select:focus,
+textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3.5px var(--accent-soft);
+  background-color:var(--surface);
+  outline:none;
+}
+textarea{
+  resize:vertical;
+  min-height:68px;
+  line-height:1.55;
+  padding-top:11px;
+  padding-bottom:11px;
+}
+textarea::-moz-focus-inner{border:0}
+select{
+  cursor:pointer;
+  padding-right:38px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--mute) 50%),
+    linear-gradient(135deg, var(--mute) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  background-color: var(--input-bg);
+}
+select:hover:not(:focus){background-color:var(--surface-2)}
+select:focus{background-color:var(--surface)}
+select option{background:var(--surface);color:var(--text)}
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill{
+  -webkit-box-shadow:0 0 0 1000px var(--input-bg) inset;
+  -webkit-text-fill-color:var(--text);
+  caret-color:var(--text);
+  transition:background-color 5000s ease-in-out 0s;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input[type="number"]{-moz-appearance:textfield}
+
+.field{display:block;margin-bottom:14px}
+.field>span{display:block;font-size:12.5px;font-weight:600;color:var(--dim);margin-bottom:7px;letter-spacing:.01em}
+
+.input-icon-wrap{position:relative;display:block}
+.input-icon-wrap>.lead{
+  position:absolute;left:13px;top:50%;transform:translateY(-50%);
+  color:var(--mute);pointer-events:none;transition:color var(--t);z-index:1;
+}
+.input-icon-wrap input{padding:12px 15px 12px 42px}
+.input-icon-wrap:focus-within>.lead{color:var(--accent)}
+.input-icon-wrap.has-toggle input{padding-right:46px}
+.pw-toggle{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;
+  border-radius:9px;display:grid;place-items:center;color:var(--mute);
+  transition:color var(--t),background var(--t);z-index:2;
+}
+.pw-toggle:hover{color:var(--text);background:var(--surface-3)}
+
+.checkbox{display:flex;gap:11px;align-items:flex-start;cursor:pointer;margin:4px 0 18px;font-size:13px;color:var(--dim);line-height:1.5}
+.checkbox input{width:18px;height:18px;margin:1px 0 0;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+.checkbox a{color:var(--accent);font-weight:600}
+.form-error{display:none;background:var(--danger-soft);color:var(--danger);border-radius:var(--r-sm);padding:11px 14px;font-size:13px;margin-bottom:15px;font-weight:500}
+.form-error.show{display:block;animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.auth-switch{text-align:center;margin-top:20px;font-size:13.5px;color:var(--dim)}
+.auth-switch button{color:var(--accent);font-weight:700;padding:4px 6px;border-radius:6px}
+.auth-switch button:hover{text-decoration:underline}
+
+/* ============================================================
+   6. ПРИЛОЖЕНИЕ
+   ============================================================ */
+#screen-app.active{display:flex;flex-direction:column}
+.app{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+.header{
+  height:62px;flex-shrink:0;display:flex;align-items:center;gap:14px;padding:0 16px;
+  background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);z-index:40;position:relative;
+}
+.hamburger{display:none;width:40px;height:40px;border-radius:12px;align-items:center;justify-content:center;color:var(--text)}
+.hamburger:hover{background:var(--surface-3)}
+.header-logo{font-size:clamp(14px,2.9vw,20px);font-weight:900;letter-spacing:.02em;text-transform:uppercase;display:flex;align-items:center;gap:10px;min-width:0}
+.header-logo .mark{
+  width:26px;height:26px;border-radius:9px;flex-shrink:0;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;color:#fff;font-size:14px;font-weight:900;box-shadow:0 6px 16px -6px var(--accent);
+}
+.header-logo .txt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-spacer{flex:1}
+.header-actions{display:flex;align-items:center;gap:6px}
+.bell-btn{position:relative}
+.badge{
+  position:absolute;top:3px;right:3px;min-width:17px;height:17px;padding:0 4px;border-radius:20px;
+  background:linear-gradient(120deg,var(--danger),#ff8a5c);color:#fff;font-size:10.5px;font-weight:800;
+  display:grid;place-items:center;border:2px solid var(--surface);line-height:1;
+}
+.badge.hide{display:none}
+.avatar-mini{
+  width:34px;height:34px;border-radius:11px;object-fit:cover;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px;cursor:pointer;
+  transition:transform var(--t);border:1px solid var(--border);
+}
+.avatar-mini:hover{transform:scale(1.06)}
+.app-body{flex:1;display:flex;min-height:0;position:relative}
+.sidebar{
+  width:256px;flex-shrink:0;background:var(--bg-soft);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:16px 12px;gap:4px;overflow-y:auto;
+  transition:transform var(--t-slow);
+}
+.side-group{display:flex;flex-direction:column;gap:3px}
+.side-label{font-size:11px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.1em;padding:10px 12px 6px}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:13px;
+  font-size:14.5px;font-weight:600;color:var(--dim);
+  transition:background var(--t),color var(--t),transform var(--t);
+  position:relative;text-align:left;width:100%;
+}
+.nav-item:hover{background:var(--surface-2);color:var(--text)}
+.nav-item:active{transform:scale(.98)}
+.nav-item.active{background:var(--accent-soft);color:var(--accent)}
+.nav-item.active::before{content:"";position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:3px;height:20px;border-radius:0 4px 4px 0;background:var(--accent)}
+.nav-item .count{margin-left:auto;font-size:11.5px;font-weight:700;background:var(--surface-3);color:var(--dim);padding:2px 8px;border-radius:20px}
+.nav-item.active .count{background:var(--accent);color:#fff}
+.side-spacer{flex:1;min-height:20px}
+.side-user{
+  display:flex;align-items:center;gap:11px;padding:11px;border-radius:14px;background:var(--surface-2);
+  border:1px solid var(--border);cursor:pointer;transition:background var(--t);margin-top:8px;
+}
+.side-user:hover{background:var(--surface-3)}
+.side-user .info{min-width:0;flex:1}
+.side-user .nm{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side-user .id{font-size:11.5px;color:var(--mute);font-weight:600}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);z-index:45;opacity:0;pointer-events:none;transition:opacity var(--t)}
+.scrim.show{opacity:1;pointer-events:auto}
+.main{flex:1;overflow-y:auto;overflow-x:hidden;padding:clamp(18px,3.4vw,34px);position:relative}
+.view{max-width:1000px;margin:0 auto;animation:viewIn .38s cubic-bezier(.22,1,.36,1) both}
+@keyframes viewIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.view-head{margin-bottom:24px}
+.view-head.row{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.view-head h1{margin:0 0 6px;font-size:clamp(22px,4vw,30px);font-weight:800;letter-spacing:-.025em}
+.view-head .sub{margin:0;color:var(--dim);font-size:14px;line-height:1.5}
+.section-title{font-size:12px;font-weight:800;color:var(--mute);text-transform:uppercase;letter-spacing:.11em;margin:28px 0 12px;display:flex;align-items:center;gap:10px}
+.section-title::after{content:"";flex:1;height:1px;background:var(--border)}
+
+/* ---------- DROPZONE ---------- */
+.dropzone{
+  position:relative;border:2px dashed var(--border-2);border-radius:var(--r-lg);
+  padding:clamp(28px,6vw,52px) 22px;text-align:center;cursor:pointer;overflow:hidden;
+  transition:border-color var(--t),background var(--t),transform var(--t);background:var(--surface);
+}
+.dropzone:hover{border-color:var(--accent);background:var(--accent-soft)}
+.dropzone.drag{border-color:var(--accent);background:var(--accent-soft);transform:scale(1.012)}
+.dropzone.small{padding:26px 18px}
+.dz-icon{
+  width:64px;height:64px;margin:0 auto 16px;border-radius:20px;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;
+  box-shadow:0 14px 34px -12px var(--accent);transition:transform var(--t);
+}
+.dropzone:hover .dz-icon{transform:translateY(-4px) scale(1.05)}
+.dz-title{font-size:16.5px;font-weight:700;margin-bottom:6px}
+.dz-hint{font-size:13px;color:var(--mute);margin-bottom:18px}
+.dz-note{font-size:12px;color:var(--mute);margin-top:16px}
+
+/* ---------- ЗАГРУЗКИ ---------- */
+.uploads{display:flex;flex-direction:column;gap:10px}
+.empty-mini{padding:22px;text-align:center;color:var(--mute);font-size:13.5px;border:1px dashed var(--border);border-radius:var(--r);background:var(--surface)}
+.upload-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:15px 16px;animation:viewIn .3s both}
+.upload-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.upload-meta{flex:1;min-width:0}
+.upload-name{font-size:14px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.upload-sub{font-size:12.5px;color:var(--mute);margin-top:2px}
+.upload-pct{font-size:14px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;flex-shrink:0}
+.progress{height:7px;border-radius:20px;background:var(--surface-3);overflow:hidden;position:relative}
+.progress-bar{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .18s linear;position:relative;overflow:hidden}
+.progress-bar::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:shimmer 1.4s infinite}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+
+/* ---------- СПИСОК ФАЙЛОВ ---------- */
+.file-list{display:flex;flex-direction:column;gap:8px}
+.file-row{
+  display:flex;align-items:center;gap:13px;padding:13px 15px;border-radius:var(--r);
+  background:var(--surface);border:1px solid var(--border);
+  transition:border-color var(--t),transform var(--t),box-shadow var(--t);animation:viewIn .3s both;
+}
+.file-row:hover{border-color:var(--border-2);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+.file-ico{width:42px;height:42px;border-radius:13px;flex-shrink:0;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.file-info{flex:1;min-width:0}
+.file-name{font-size:14px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file-meta{font-size:12.3px;color:var(--mute);margin-top:3px;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.tag{color:var(--accent);font-weight:600}
+.file-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.empty{padding:60px 24px;text-align:center;color:var(--dim);border:1px dashed var(--border);border-radius:var(--r-lg);background:var(--surface)}
+.empty .em-ico{width:60px;height:60px;margin:0 auto 16px;border-radius:20px;display:grid;place-items:center;background:var(--surface-3);color:var(--mute)}
+.empty h3{margin:0 0 6px;font-size:17px;font-weight:700;color:var(--text)}
+.empty p{margin:0;font-size:13.5px}
+
+/* ---------- ПРОЕКТЫ ---------- */
+.project-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.project-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:20px;cursor:pointer;transition:transform var(--t),border-color var(--t),box-shadow var(--t);
+  position:relative;overflow:hidden;text-align:left;width:100%;animation:viewIn .35s both;
+}
+.project-card::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity var(--t);background:linear-gradient(135deg,var(--accent-soft),transparent 60%)}
+.project-card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:var(--shadow)}
+.project-card:hover::before{opacity:1}
+.project-card>*{position:relative}
+.pc-icon{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;margin-bottom:14px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;box-shadow:0 10px 24px -12px var(--accent)}
+.pc-name{font-size:16px;font-weight:750;margin-bottom:5px;letter-spacing:-.01em}
+.pc-desc{font-size:13px;color:var(--dim);line-height:1.5;margin-bottom:14px;min-height:38px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pc-foot{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--mute);font-weight:600;gap:8px;flex-wrap:wrap}
+.pc-avatars{display:flex}
+.pc-avatars .avatar-mini{width:26px;height:26px;border-radius:9px;font-size:10.5px;margin-left:-8px;border:2px solid var(--surface)}
+.pc-avatars .avatar-mini:first-child{margin-left:0}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px}
+.member-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);margin-bottom:8px;flex-wrap:wrap}
+.member-row .info{flex:1;min-width:140px}
+.member-row .nm{font-size:14px;font-weight:650;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.member-row .id{font-size:12px;color:var(--mute);margin-top:2px}
+.role-pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.02em}
+.role-pill.admin{background:var(--accent-soft);color:var(--accent)}
+.role-pill.editor{background:rgba(46,197,255,.14);color:var(--accent-2)}
+.role-pill.viewer{background:var(--surface-3);color:var(--dim)}
+.role-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.role-opt{padding:14px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--surface-2);cursor:pointer;transition:border-color var(--t),background var(--t);text-align:left}
+.role-opt:hover{border-color:var(--border-2)}
+.role-opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.role-opt .rt{font-size:13.5px;font-weight:700;margin-bottom:5px;display:flex;align-items:center;gap:7px}
+.role-opt .rd{font-size:11.8px;color:var(--mute);line-height:1.5}
+
+/* ---------- ПРОФИЛЬ ---------- */
+.profile-cover{
+  height:clamp(130px,22vw,190px);border-radius:var(--r-xl);position:relative;overflow:hidden;
+  background:linear-gradient(120deg,var(--accent),var(--accent-2) 60%,#ff5c9d);box-shadow:var(--shadow);
+}
+.profile-cover::after{content:"";position:absolute;inset:0;background:radial-gradient(400px 200px at 80% 20%,rgba(255,255,255,.3),transparent 70%)}
+.profile-body{padding:0 clamp(16px,3vw,28px) 0;margin-top:-46px;position:relative;z-index:2}
+.avatar-lg{
+  width:104px;height:104px;border-radius:30px;border:4px solid var(--bg);object-fit:cover;
+  background:linear-gradient(135deg,#ff8a5c,var(--accent));display:grid;place-items:center;
+  color:#fff;font-size:38px;font-weight:800;box-shadow:var(--shadow);transition:transform var(--t);
+}
+.avatar-lg:hover{transform:scale(1.03) rotate(-2deg)}
+.profile-head{display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;margin-top:14px}
+.profile-name{font-size:clamp(21px,4vw,28px);font-weight:800;letter-spacing:-.025em;margin:0 0 6px}
+.id-chip{
+  display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:20px;
+  background:var(--accent-soft);color:var(--accent);font-size:12.5px;font-weight:800;
+  letter-spacing:.03em;cursor:pointer;transition:transform var(--t);
+}
+.id-chip:hover{transform:scale(1.04)}
+
+/* ---------- СТАТИСТИКА (используется в Профиле и в Проекте) ---------- */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:22px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:17px;animation:viewIn .35s both}
+.stat b{display:block;font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:3px}
+.stat span{font-size:12px;color:var(--mute);font-weight:600}
+
+.info-list{display:flex;flex-direction:column;gap:0}
+.info-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 0;border-bottom:1px solid var(--border);font-size:14px}
+.info-row:last-child{border-bottom:none}
+.info-row .k{color:var(--dim);display:flex;align-items:center;gap:9px}
+.info-row .v{font-weight:650;text-align:right;word-break:break-word}
+
+/* ---------- УВЕДОМЛЕНИЯ ---------- */
+.notif-panel{
+  position:fixed;top:0;right:0;bottom:0;width:min(400px,100vw);background:var(--surface);
+  border-left:1px solid var(--border);z-index:70;display:flex;flex-direction:column;
+  transform:translateX(102%);transition:transform var(--t-slow);box-shadow:-20px 0 50px rgba(0,0,0,.28);
+}
+.notif-panel.open{transform:none}
+.panel-head{display:flex;align-items:center;gap:10px;padding:16px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.panel-head h3{margin:0;font-size:17px;font-weight:800;flex:1;letter-spacing:-.02em}
+.notif-list{flex:1;overflow-y:auto;padding:12px}
+.notif{display:flex;gap:12px;padding:13px;border-radius:var(--r);transition:background var(--t);cursor:pointer;position:relative;animation:viewIn .3s both}
+.notif:hover{background:var(--surface-2)}
+.notif.unread{background:var(--accent-soft)}
+.notif-ico{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;flex-shrink:0}
+.notif-ico.ok{background:rgba(47,209,139,.15);color:var(--success)}
+.notif-ico.err{background:var(--danger-soft);color:var(--danger)}
+.notif-ico.info{background:var(--accent-soft);color:var(--accent)}
+.notif-ico.warn{background:rgba(255,180,84,.15);color:var(--warn)}
+.notif-body{flex:1;min-width:0}
+.notif-title{font-size:13.5px;font-weight:700;margin-bottom:3px}
+.notif-text{font-size:12.7px;color:var(--dim);line-height:1.5;word-break:break-word}
+.notif-time{font-size:11.5px;color:var(--mute);margin-top:5px;font-weight:600}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:6px}
+
+/* ---------- МОДАЛЬНЫЕ ОКНА / ПОПАПЫ / ТОСТЫ ---------- */
+.modal-overlay{
+  position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
+  padding:18px;background:rgba(4,6,12,.6);backdrop-filter:blur(6px);
+  opacity:0;transition:opacity var(--t);overflow-y:auto;
+}
+.modal-overlay.show{opacity:1}
+.modal{
+  width:100%;max-width:460px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-xl);box-shadow:var(--shadow);overflow:hidden;
+  transform:translateY(22px) scale(.96);opacity:0;transition:transform var(--t-slow),opacity var(--t-slow);margin:auto;
+}
+.modal.wide{max-width:560px}
+.modal-overlay.show .modal{transform:none;opacity:1}
+.modal-head{display:flex;align-items:center;gap:12px;padding:20px 22px 0}
+.modal-head h3{margin:0;font-size:18px;font-weight:800;flex:1;letter-spacing:-.02em}
+.modal-body{padding:18px 22px 4px}
+.modal-body p{margin:0 0 14px;color:var(--dim);font-size:14px;line-height:1.6}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;padding:16px 22px 22px;flex-wrap:wrap}
+.modal-foot .btn{flex:1 1 auto;min-width:110px}
+.popup{
+  position:fixed;z-index:95;min-width:198px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:6px;box-shadow:var(--shadow);
+  opacity:0;transform:translateY(-6px) scale(.97);transition:opacity .16s,transform .16s;
+}
+.popup.show{opacity:1;transform:none}
+.popup-item{display:flex;align-items:center;gap:11px;width:100%;padding:10px 12px;border-radius:10px;font-size:13.8px;font-weight:600;color:var(--text);transition:background var(--t),color var(--t);text-align:left}
+.popup-item:hover{background:var(--surface-3)}
+.popup-item.danger{color:var(--danger)}
+.popup-item.danger:hover{background:var(--danger-soft)}
+.popup-sep{height:1px;background:var(--border);margin:5px 8px}
+#toastRoot{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:12000;display:flex;flex-direction:column;gap:9px;align-items:center;pointer-events:none;width:calc(100% - 32px);max-width:420px}
+.toast{
+  display:flex;align-items:center;gap:11px;padding:13px 18px;border-radius:var(--r);
+  background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);
+  font-size:13.5px;font-weight:600;animation:toastIn .35s cubic-bezier(.22,1,.36,1) both;
+  max-width:100%;pointer-events:auto;
+}
+.toast.out{animation:toastOut .3s ease forwards}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateY(14px) scale(.94)}}
+.toast.ok .toast-ico{color:var(--success)}
+.toast.err .toast-ico{color:var(--danger)}
+.toast.info .toast-ico{color:var(--accent)}
+
+/* ---------- НАСТРОЙКИ ---------- */
+.setting-row{display:flex;align-items:center;gap:16px;padding:16px 18px;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);margin-bottom:9px;flex-wrap:wrap}
+.setting-row .info{flex:1;min-width:170px}
+.setting-row .t{font-size:14.5px;font-weight:650;margin-bottom:3px}
+.setting-row .d{font-size:12.7px;color:var(--mute);line-height:1.5}
+.seg{display:flex;gap:4px;background:var(--surface-3);padding:4px;border-radius:12px;flex-shrink:0}
+.seg button{padding:8px 14px;border-radius:9px;font-size:13px;font-weight:650;color:var(--dim);transition:background var(--t),color var(--t)}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow-sm)}
+.switch{width:46px;height:27px;border-radius:20px;background:var(--surface-3);position:relative;transition:background var(--t);flex-shrink:0;cursor:pointer}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:transform var(--t);box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.switch.on{background:var(--accent)}
+.switch.on::after{transform:translateX(19px)}
+.danger-zone{border-color:var(--danger-soft)!important}
+.back-link{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:var(--dim);padding:7px 12px;border-radius:10px;font-weight:600;transition:background var(--t),color var(--t)}
+.back-link:hover{background:var(--surface-2);color:var(--text)}
+
+/* ============================================================
+   7. АДАПТИВ
+   ============================================================ */
+@media (max-width:900px){
+  .hamburger{display:flex}
+  .sidebar{position:fixed;top:0;bottom:0;left:0;z-index:60;transform:translateX(-104%);width:274px;box-shadow:var(--shadow)}
+  .sidebar.open{transform:none}
+  .header{padding:0 12px;gap:8px}
+  .main{padding:18px 14px 90px}
+  .file-row{padding:11px 12px;gap:10px}
+  .file-ico{width:38px;height:38px;border-radius:11px}
+  .hide-sm{display:none}
+  .modal-foot .btn{flex:1 1 100%}
+  .profile-head{gap:14px}
+  .avatar-lg{width:84px;height:84px;border-radius:24px;font-size:30px}
+  .profile-body{margin-top:-38px}
+  .role-choice{grid-template-columns:1fr}
+  /* Статистика: допускаем перенос, если не хватает места на 3 колонки */
+  .stat-grid{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+}
+@media (max-width:520px){
+  /* Статистика: на узких экранах — вертикальная колонка */
+  .stat-grid{grid-template-columns:1fr;gap:10px}
+  .stat{padding:16px}
+  .stat b{font-size:22px}
+}
+@media (max-width:420px){
+  .landing-actions{width:100%;flex-direction:column}
+  .landing-actions .btn{width:100%}
+  .oauth-btn{padding:11px 13px;font-size:13.4px}
+  .project-grid{grid-template-columns:1fr}
+  .auth-overlay{padding:12px 10px}
+  .auth-modal{padding:26px 18px 20px}
+  .auth-modal h2{font-size:21px}
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="hidden"]),
+  select,
+  textarea{font-size:15px;padding:13px 15px}
+  .input-icon-wrap input{padding:13px 15px 13px 42px}
+  .input-icon-wrap.has-toggle input{padding-right:46px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></symbol>
+<symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+<symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.7" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-google" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M21.35 11.1H12v2.9h5.35c-.23 1.5-1.74 4.4-5.35 4.4a5.9 5.9 0 0 1 0-11.8c1.68 0 2.8.72 3.45 1.33l2.35-2.27A9 9 0 0 0 12 3a9 9 0 1 0 0 18c5.2 0 8.63-3.65 8.63-8.8 0-.6-.07-1.05-.28-1.1z"/></symbol>
+<symbol id="i-yandex" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1.7 15.6h-2.2v-4.9l-3.5 4.9H5.5l4.4-5.8L5.7 6.4h2.5l3.4 4.7V6.4h2.2v11.2z"/></symbol>
+<symbol id="i-apple" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M16.36 12.68c-.03-2.6 2.12-3.85 2.22-3.91-1.21-1.77-3.1-2.01-3.77-2.04-1.6-.16-3.13.94-3.94.94-.81 0-2.07-.92-3.4-.9-1.75.03-3.36 1.02-4.26 2.58-1.81 3.15-.46 7.8 1.3 10.36.86 1.25 1.89 2.66 3.24 2.61 1.3-.05 1.79-.84 3.36-.84 1.57 0 2.01.84 3.39.81 1.4-.02 2.28-1.28 3.13-2.54.99-1.46 1.4-2.87 1.42-2.94-.03-.01-2.72-1.04-2.75-4.13zM13.9 4.6c.71-.86 1.19-2.06 1.06-3.25-1.02.04-2.26.68-2.99 1.54-.66.76-1.23 1.98-1.08 3.14 1.14.09 2.3-.58 3.01-1.43z"/></symbol>
+<symbol id="i-huawei" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M12 2 4 6v6c0 4.4 3.4 8.4 8 10 4.6-1.6 8-5.6 8-10V6l-8-4zm0 3.2 5 2.5v4.8c0 3-2.1 5.9-5 7-2.9-1.1-5-4-5-7V7.7l5-2.5z"/></symbol>
+</defs>
+</svg>
+
+<section class="screen active" id="screen-landing">
+  <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+  <div class="landing-inner">
+    <div class="landing-badge"><span class="pulse"></span> Сервис работает стабильно</div>
+    <h1 class="brand-logo">
+      <span>OURA</span><span>DROP</span><span>ME</span><span>FILES</span>
+    </h1>
+    <p class="landing-desc">
+      Быстрая и безопасная передача файлов. Загружайте, храните и делитесь файлами
+      с коллегами и друзьями — объединяйте их в проекты, управляйте доступом
+      и следите за всем в реальном времени.
+    </p>
+    <div class="landing-actions">
+      <button class="btn btn-primary" id="goRegister" type="button">
+        <svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-user"/></svg>
+        Регистрация
+      </button>
+      <button class="btn btn-ghost" id="goLogin" type="button">
+        <svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-logout"/></svg>
+        Вход
+      </button>
+    </div>
+    <div class="landing-stats">
+      <div class="lstat"><b>2 ГБ</b><span>на файл</span></div>
+      <div class="lstat"><b>256-bit</b><span>шифрование</span></div>
+      <div class="lstat"><b>99.9%</b><span>uptime</span></div>
+    </div>
+  </div>
+  <div class="landing-foot">© 2025 OURA DROP ME FILES · Все права защищены</div>
+</section>
+
+<section class="screen" id="screen-app">
+  <div class="app">
+    <header class="header">
+      <button class="hamburger" id="hamburger" aria-label="Меню">
+        <svg class="ic" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-menu"/></svg>
+      </button>
+      <div class="header-logo">
+        <span class="mark">O</span>
+        <span class="txt">OURA DROP ME FILES</span>
+      </div>
+      <div class="header-spacer"></div>
+      <div class="header-actions">
+        <button class="btn-icon" id="themeToggle" title="Сменить тему">
+          <svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="themeIcon"><use href="#i-moon"/></svg>
+        </button>
+        <button class="btn-icon bell-btn" id="notifBtn" title="Уведомления">
+          <svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-bell"/></svg>
+          <span class="badge hide" id="notifBadge">0</span>
+        </button>
+        <div class="avatar-mini" id="headerAvatar" title="Профиль">U</div>
+      </div>
+    </header>
+
+    <div class="app-body">
+      <aside class="sidebar" id="sidebar">
+        <div class="side-label">Работа с файлами</div>
+        <div class="side-group">
+          <button class="nav-item" data-view="upload">
+            <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-upload"/></svg>
+            Загрузить
+          </button>
+          <button class="nav-item" data-view="files">
+            <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-download"/></svg>
+            Мои загрузки
+            <span class="count" id="cntFiles">0</span>
+          </button>
+          <button class="nav-item" data-view="projects">
+            <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-folder"/></svg>
+            Мои проекты
+            <span class="count" id="cntProjects">0</span>
+          </button>
+        </div>
+        <div class="side-spacer"></div>
+        <div class="side-group">
+          <button class="nav-item" data-view="profile">
+            <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-user"/></svg>
+            Профиль
+          </button>
+          <button class="nav-item" data-view="settings">
+            <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-settings"/></svg>
+            Настройки
+          </button>
+        </div>
+        <div class="side-user" id="sideUser">
+          <div class="avatar-mini" id="sideAvatar">U</div>
+          <div class="info">
+            <div class="nm" id="sideName">Пользователь</div>
+            <div class="id" id="sideId">ID #0000</div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="scrim" id="scrim"></div>
+      <main class="main" id="viewRoot"></main>
+    </div>
+  </div>
+</section>
+
+<aside class="notif-panel" id="notifPanel">
+  <div class="panel-head">
+    <h3>Уведомления</h3>
+    <button class="btn-text" id="readAllBtn">Прочитать все</button>
+    <button class="btn-text danger" id="clearAllBtn">Очистить</button>
+    <button class="btn-icon" id="closeNotifBtn" aria-label="Закрыть">
+      <svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-x"/></svg>
+    </button>
+  </div>
+  <div class="notif-list" id="notifList"></div>
+</aside>
+
+<div id="modal-root"></div>
+<div id="toastRoot"></div>
+
+<script>
+/* ============================================================
+   1. УТИЛИТЫ
+   ============================================================ */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function icon(name, size = 18, sw = 2) {
+  return `<svg class="ic" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"><use href="#i-${name}"/></svg>`;
+}
+function fmtSize(b) {
+  if (!b) return '0 Б';
+  const u = ['Б','КБ','МБ','ГБ','ТБ']; let i = 0;
+  while (b >= 1024 && i < u.length - 1) { b /= 1024; i++; }
+  return (i === 0 ? b.toFixed(0) : b.toFixed(b < 10 ? 1 : 0)) + ' ' + u[i];
+}
+function fmtTime(sec) {
+  if (!isFinite(sec) || sec < 0) return '—';
+  if (sec < 1) return 'меньше секунды';
+  if (sec < 60) return Math.ceil(sec) + ' с';
+  const m = Math.floor(sec / 60), s = Math.round(sec % 60);
+  return m + ' мин' + (s ? ' ' + s + ' с' : '');
+}
+function fmtDate(ts) {
+  return new Date(ts).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+function fmtDateTime(ts) {
+  return new Date(ts).toLocaleString('ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+function timeAgo(ts) {
+  const d = (Date.now() - ts) / 1000;
+  if (d < 60) return 'только что';
+  if (d < 3600) return Math.floor(d / 60) + ' мин назад';
+  if (d < 86400) return Math.floor(d / 3600) + ' ч назад';
+  if (d < 604800) return Math.floor(d / 86400) + ' дн назад';
+  return fmtDate(ts);
+}
+const accessLabel = a => ({ private: 'Приватный', link: 'По ссылке', public: 'Публичный' }[a] || 'Приватный');
+const initials = n => (n || 'U').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+
+/* ============================================================
+   2. СОСТОЯНИЕ
+   ============================================================ */
+const KEY = 'oura_drop_me_files_v1';
+const state = {
+  theme: 'dark',
+  user: null,
+  registry: [],
+  seq: 1040,
+  files: [],
+  projects: [],
+  notifications: [],
+  prefs: { login: true, upload: true, project: true, access: true },
+};
+const blobs = new Map();
+const activeUploads = [];
+let route = { name: 'upload', params: {} };
+
+function save() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify({
+      theme: state.theme, user: state.user, registry: state.registry,
+      seq: state.seq, files: state.files, projects: state.projects,
+      notifications: state.notifications, prefs: state.prefs,
+    }));
+  } catch (e) {}
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) Object.assign(state, JSON.parse(raw));
+  } catch (e) {}
+}
+load();
+
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', state.theme);
+  const use = $('#themeIcon use');
+  if (use) use.setAttribute('href', state.theme === 'dark' ? '#i-moon' : '#i-sun');
+}
+applyTheme();
+
+/* ============================================================
+   3. ТОСТЫ
+   ============================================================ */
+function toast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  const ic = type === 'ok' ? 'check' : type === 'err' ? 'x' : 'bell';
+  el.innerHTML = `<span class="toast-ico">${icon(ic, 18)}</span><span>${esc(msg)}</span>`;
+  $('#toastRoot').appendChild(el);
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 320); }, 3000);
+}
+
+/* ============================================================
+   4. ОБЩИЕ МОДАЛЬНЫЕ ОКНА
+   ============================================================ */
+function modal(html, opts = {}) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `<div class="modal ${opts.wide ? 'wide' : ''}">${html}</div>`;
+  $('#modal-root').appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('show'));
+  const close = () => {
+    overlay.classList.remove('show');
+    document.removeEventListener('keydown', onEsc);
+    setTimeout(() => overlay.remove(), 240);
+  };
+  const onEsc = e => { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onEsc);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  overlay.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', close));
+  return { el: overlay, close };
+}
+
+/* ============================================================
+   5. ПОПАП-МЕНЮ
+   ============================================================ */
+let curPopup = null;
+function closePopup() { if (curPopup) { curPopup.remove(); curPopup = null; } }
+function popup(anchor, items) {
+  closePopup();
+  const el = document.createElement('div');
+  el.className = 'popup';
+  el.innerHTML = items.map((it, i) =>
+    it.sep ? '<div class="popup-sep"></div>'
+    : `<button class="popup-item ${it.danger ? 'danger' : ''}" data-i="${i}">${icon(it.icon, 16)}<span>${esc(it.label)}</span></button>`
+  ).join('');
+  document.body.appendChild(el);
+  const r = anchor.getBoundingClientRect();
+  const w = el.offsetWidth, h = el.offsetHeight;
+  let top = r.bottom + 8, left = r.right - w;
+  if (top + h > innerHeight - 10) top = Math.max(10, r.top - h - 8);
+  if (left < 10) left = 10;
+  if (left + w > innerWidth - 10) left = innerWidth - w - 10;
+  el.style.top = top + 'px';
+  el.style.left = left + 'px';
+  requestAnimationFrame(() => el.classList.add('show'));
+  el.addEventListener('click', e => {
+    const b = e.target.closest('[data-i]');
+    if (!b) return;
+    const it = items[+b.dataset.i];
+    closePopup();
+    it.onClick && it.onClick();
+  });
+  curPopup = el;
+  setTimeout(() => {
+    const handler = ev => {
+      if (curPopup && !curPopup.contains(ev.target)) { closePopup(); document.removeEventListener('click', handler); }
+    };
+    document.addEventListener('click', handler);
+  }, 0);
+}
+
+/* ============================================================
+   6. ЭКРАНЫ
+   ============================================================ */
+function showScreen(id) {
+  $$('.screen').forEach(s => s.classList.remove('active'));
+  $('#screen-' + id).classList.add('active');
+}
+
+/* ============================================================
+   7. АВТОРИЗАЦИЯ / РЕГИСТРАЦИЯ
+   ============================================================ */
+const OAUTH = {
+  'Google':    { color:'#4285F4', icon:'google', domain:'gmail.com',  names:['Алексей Морозов','Мария Соколова','Иван Петров','Дарья Крылова'] },
+  'Яндекс':    { color:'#FC3F1D', icon:'yandex', domain:'yandex.ru',  names:['Дмитрий Волков','Анна Кузнецова','Сергей Новиков','Полина Ефимова'] },
+  'Apple ID':  { color:'#111111', icon:'apple',  domain:'icloud.com', names:['Екатерина Лебедева','Никита Орлов','Ольга Зайцева','Артём Белов'] },
+  'Huawei ID': { color:'#2E6BE6', icon:'huawei', domain:'huawei.com', names:['Тимур Ахметов','Лилия Гафарова','Рустам Юсупов','Алина Насырова'] },
+};
+const TRANSLIT = {а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'e',ж:'zh',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'c',ч:'ch',ш:'sh',щ:'sch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya'};
+const translit = s => s.toLowerCase().split('').map(c => TRANSLIT[c] ?? c).join('');
+
+function openAuthModal(mode) {
+  document.querySelectorAll('.auth-overlay').forEach(el => el.remove());
+  const isReg = mode === 'register';
+
+  const overlay = document.createElement('div');
+  overlay.className = 'auth-overlay';
+  overlay.innerHTML = `
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <button class="auth-close" type="button" aria-label="Закрыть">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><use href="#i-x"/></svg>
+      </button>
+      <h2 id="authTitle">${isReg ? 'Создать аккаунт' : 'Вход в аккаунт'}</h2>
+      <p class="auth-sub">${isReg ? 'Зарегистрируйтесь и получите уникальный ID' : 'Рады видеть вас снова'}</p>
+
+      <div class="oauth-grid">
+        ${Object.entries(OAUTH).map(([name, o]) => `
+          <button type="button" class="oauth-btn" data-oauth="${esc(name)}">
+            <span class="oauth-dot" style="background:${o.color}">${icon(o.icon, 13, 0)}</span>
+            ${isReg ? 'Продолжить с ' : 'Войти через '}${esc(name)}
+          </button>
+        `).join('')}
+      </div>
+
+      <div class="divider"><span>или</span></div>
+      <div class="form-error" id="authError"></div>
+
+      <form id="authForm" novalidate autocomplete="on">
+        <label class="field">
+          <span>Email</span>
+          <div class="input-icon-wrap">
+            <span class="lead">${icon('mail', 17)}</span>
+            <input type="email" id="authEmail" placeholder="you@example.com" autocomplete="email" inputmode="email">
+          </div>
+        </label>
+
+        <label class="field">
+          <span>Пароль</span>
+          <div class="input-icon-wrap has-toggle">
+            <span class="lead">${icon('lock', 17)}</span>
+            <input type="password" id="authPass" placeholder="${isReg ? 'Минимум 6 символов' : 'Ваш пароль'}" autocomplete="${isReg ? 'new-password' : 'current-password'}">
+            <button type="button" class="pw-toggle" data-pw="authPass" aria-label="Показать пароль">${icon('eye', 16)}</button>
+          </div>
+        </label>
+
+        ${isReg ? `
+        <label class="field">
+          <span>Подтверждение пароля</span>
+          <div class="input-icon-wrap">
+            <span class="lead">${icon('lock', 17)}</span>
+            <input type="password" id="authPass2" placeholder="Повторите пароль" autocomplete="new-password">
+          </div>
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" id="authAgree">
+          <span>Я согласен с <a href="#" onclick="return false">условиями использования</a> и <a href="#" onclick="return false">политикой конфиденциальности</a></span>
+        </label>` : ''}
+
+        <button type="submit" class="btn btn-primary btn-block">${isReg ? 'Создать аккаунт' : 'Войти'}</button>
+      </form>
+
+      <div class="auth-switch">
+        ${isReg ? 'Уже есть аккаунт?' : 'Нет аккаунта?'}
+        <button type="button" id="authSwitch">${isReg ? 'Войти' : 'Зарегистрироваться'}</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('show'));
+
+  const close = () => {
+    overlay.classList.remove('show');
+    document.removeEventListener('keydown', onEsc);
+    setTimeout(() => overlay.remove(), 280);
+  };
+  const onEsc = e => { if (e.key === 'Escape') close(); };
+  document.addEventListener('keydown', onEsc);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  overlay.querySelector('.auth-close').addEventListener('click', close);
+
+  overlay.querySelectorAll('.pw-toggle').forEach(b => {
+    b.addEventListener('click', () => {
+      const inp = overlay.querySelector('#' + b.dataset.pw);
+      if (!inp) return;
+      const show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password';
+      b.innerHTML = show ? icon('eye-off', 16) : icon('eye', 16);
+    });
+  });
+
+  overlay.querySelector('#authSwitch').addEventListener('click', () => {
+    close();
+    setTimeout(() => openAuthModal(isReg ? 'login' : 'register'), 280);
+  });
+
+  overlay.querySelectorAll('[data-oauth]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const p = btn.dataset.oauth;
+      const o = OAUTH[p];
+      const name = o.names[Math.floor(Math.random() * o.names.length)];
+      const email = translit(name).replace(/\s+/g, '.') + '@' + o.domain;
+      btn.style.opacity = '.6';
+      setTimeout(() => {
+        close();
+        const existing = state.registry.find(u => u.email === email);
+        if (existing) signIn(existing, false);
+        else signIn(registerUser({ name, email, provider: p }), true);
+      }, 420);
+    });
+  });
+
+  overlay.querySelector('#authForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const errEl = overlay.querySelector('#authError');
+    const fail = m => {
+      errEl.textContent = m;
+      errEl.classList.remove('show');
+      void errEl.offsetWidth;
+      errEl.classList.add('show');
+    };
+
+    const email = overlay.querySelector('#authEmail').value.trim();
+    const pass  = overlay.querySelector('#authPass').value;
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Введите корректный email');
+    if (!pass) return fail('Введите пароль');
+
+    if (isReg) {
+      const pass2 = overlay.querySelector('#authPass2').value;
+      if (pass.length < 6) return fail('Пароль должен содержать минимум 6 символов');
+      if (pass !== pass2) return fail('Пароли не совпадают');
+      if (!overlay.querySelector('#authAgree').checked) return fail('Необходимо согласиться с условиями использования');
+    }
+
+    errEl.classList.remove('show');
+    const name = email.split('@')[0].replace(/[._-]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+    close();
+    setTimeout(() => {
+      const existing = state.registry.find(u => u.email === email);
+      if (existing) signIn(existing, false);
+      else signIn(registerUser({ name, email, provider: 'Email' }), true);
+    }, 120);
+  });
+}
+
+function registerUser({ name, email, provider }) {
+  const user = {
+    id: ++state.seq,
+    name: name || 'Пользователь',
+    email: email || 'user@example.com',
+    provider: provider || 'Email',
+    registeredAt: Date.now(),
+  };
+  state.registry.push({ id: user.id, name: user.name, email: user.email });
+  return user;
+}
+
+function signIn(user, isNew) {
+  state.user = user;
+  if (isNew) {
+    state.notifications = [
+      { id: uid(), type:'access',  title:'Добро пожаловать!', text:`Ваш аккаунт создан. Ваш ID — #${user.id}. Сохраните его, чтобы получать доступ к проектам.`, ts: Date.now() - 4000, read: false },
+      { id: uid(), type:'login',   title:'Вход в аккаунт',    text:`Выполнен вход через ${user.provider}. Если это были не вы — смените пароль.`, ts: Date.now() - 2000, read: false },
+      { id: uid(), type:'project', title:'Совет дня',         text:'Объединяйте файлы в проекты и приглашайте участников по ID.', ts: Date.now() - 60000, read: true },
+    ];
+  } else {
+    addNotif('login', 'Вход в аккаунт', `Выполнен вход через ${user.provider}.`);
+  }
+  save();
+  updateUserUI();
+  renderBadge();
+  showScreen('app');
+  go('upload');
+  toast(isNew ? `Аккаунт создан · Ваш ID #${user.id}` : `С возвращением, ${user.name.split(' ')[0]}!`, 'ok');
+}
+
+/* ============================================================
+   8. УВЕДОМЛЕНИЯ
+   ============================================================ */
+const NOTIF_META = {
+  login:      { icon:'lock',     cls:'info' },
+  upload_ok:  { icon:'check',    cls:'ok'   },
+  upload_err: { icon:'x',        cls:'err'  },
+  project:    { icon:'download', cls:'info' },
+  access:     { icon:'shield',   cls:'warn' },
+};
+function addNotif(type, title, text) {
+  if (state.prefs[type === 'upload_ok' || type === 'upload_err' ? 'upload' : type] === false) return;
+  state.notifications.unshift({ id: uid(), type, title, text, ts: Date.now(), read: false });
+  if (state.notifications.length > 60) state.notifications.length = 60;
+  save(); renderBadge(); renderNotifPanel();
+}
+function renderBadge() {
+  const n = state.notifications.filter(x => !x.read).length;
+  const b = $('#notifBadge');
+  b.textContent = n > 99 ? '99+' : n;
+  b.classList.toggle('hide', n === 0);
+}
+function renderNotifPanel() {
+  const list = $('#notifList');
+  if (!state.notifications.length) {
+    list.innerHTML = `<div class="empty" style="padding:40px 18px">
+      <div class="em-ico">${icon('bell', 24)}</div>
+      <h3>Пока пусто</h3><p>Здесь появятся ваши уведомления</p></div>`;
+    return;
+  }
+  list.innerHTML = state.notifications.map(n => {
+    const m = NOTIF_META[n.type] || NOTIF_META.login;
+    return `<div class="notif ${n.read ? '' : 'unread'}" data-nid="${n.id}">
+      <div class="notif-ico ${m.cls}">${icon(m.icon, 17)}</div>
+      <div class="notif-body">
+        <div class="notif-title">${esc(n.title)}</div>
+        <div class="notif-text">${esc(n.text)}</div>
+        <div class="notif-time">${timeAgo(n.ts)}</div>
+      </div>
+      ${n.read ? '' : '<div class="notif-dot"></div>'}
+    </div>`;
+  }).join('');
+}
+$('#notifList').addEventListener('click', e => {
+  const el = e.target.closest('[data-nid]');
+  if (!el) return;
+  const n = state.notifications.find(x => x.id === el.dataset.nid);
+  if (n && !n.read) { n.read = true; save(); renderBadge(); renderNotifPanel(); }
+});
+$('#readAllBtn').addEventListener('click', () => {
+  state.notifications.forEach(n => n.read = true); save(); renderBadge(); renderNotifPanel();
+  toast('Все уведомления прочитаны', 'ok');
+});
+$('#clearAllBtn').addEventListener('click', () => {
+  state.notifications = []; save(); renderBadge(); renderNotifPanel();
+  toast('Уведомления очищены', 'info');
+});
+$('#notifBtn').addEventListener('click', () => { $('#notifPanel').classList.add('open'); renderNotifPanel(); });
+$('#closeNotifBtn').addEventListener('click', () => $('#notifPanel').classList.remove('open'));
+
+/* ============================================================
+   9. ПОЛЬЗОВАТЕЛЬ / ШАПКА
+   ============================================================ */
+function updateUserUI() {
+  const u = state.user;
+  if (!u) return;
+  const ini = initials(u.name);
+  $('#headerAvatar').textContent = ini;
+  $('#sideAvatar').textContent = ini;
+  $('#sideName').textContent = u.name;
+  $('#sideId').textContent = 'ID #' + u.id;
+  $('#cntFiles').textContent = state.files.length;
+  $('#cntProjects').textContent = state.projects.length;
+}
+$('#goRegister').addEventListener('click', () => openAuthModal('register'));
+$('#goLogin').addEventListener('click', () => openAuthModal('login'));
+
+/* ============================================================
+   10. НАВИГАЦИЯ
+   ============================================================ */
+function go(name, params = {}) {
+  route = { name, params };
+  $$('.nav-item').forEach(n => n.classList.toggle('active',
+    n.dataset.view === name || (name === 'project' && n.dataset.view === 'projects')));
+  closeSidebar();
+  renderView();
+  $('#viewRoot').scrollTop = 0;
+}
+$$('.nav-item').forEach(n => n.addEventListener('click', () => go(n.dataset.view)));
+$('#sideUser').addEventListener('click', () => go('profile'));
+$('#headerAvatar').addEventListener('click', () => go('profile'));
+
+function openSidebar() { $('#sidebar').classList.add('open'); $('#scrim').classList.add('show'); }
+function closeSidebar() { $('#sidebar').classList.remove('open'); $('#scrim').classList.remove('show'); }
+$('#hamburger').addEventListener('click', openSidebar);
+$('#scrim').addEventListener('click', closeSidebar);
+
+$('#themeToggle').addEventListener('click', () => {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(); save();
+  if (route.name === 'settings') renderView();
+});
+
+/* ============================================================
+   11. РЕНДЕР ВИДОВ
+   ============================================================ */
+function renderView() {
+  const root = $('#viewRoot');
+  let html = '';
+  switch (route.name) {
+    case 'upload':   html = viewUpload(); break;
+    case 'files':    html = viewFiles(); break;
+    case 'projects': html = viewProjects(); break;
+    case 'project':  html = viewProject(route.params.id); break;
+    case 'profile':  html = viewProfile(); break;
+    case 'settings': html = viewSettings(); break;
+    default:         html = viewUpload();
+  }
+  root.innerHTML = `<div class="view">${html}</div>`;
+  afterRender();
+  updateUserUI();
+}
+function afterRender() {
+  switch (route.name) {
+    case 'upload':   bindUploadView(); break;
+    case 'files':    bindFilesView(); break;
+    case 'projects': bindProjectsView(); break;
+    case 'project':  bindProjectView(route.params.id); break;
+    case 'settings': bindSettingsView(); break;
+    case 'profile':  bindProfileView(); break;
+  }
+  bindFileActions();
+}
+
+/* ---------- ВИД: ЗАГРУЗИТЬ ---------- */
+function viewUpload() {
+  const recent = [...state.files].sort((a, b) => b.uploadedAt - a.uploadedAt).slice(0, 4);
+  return `
+  <div class="view-head">
+    <h1>Загрузить файлы</h1>
+    <p class="sub">Перетащите файлы в область ниже или выберите их с устройства. Максимум 2 ГБ на файл.</p>
+  </div>
+  <div class="dropzone" id="dropzone">
+    <div class="dz-icon">${icon('upload', 28, 2.2)}</div>
+    <div class="dz-title">Перетащите файлы сюда</div>
+    <div class="dz-hint">Любые типы файлов · до 2 ГБ каждый</div>
+    <button class="btn btn-primary" id="pickBtn" type="button">${icon('folder', 16)} Выбрать файлы</button>
+    <input type="file" id="fileInput" multiple hidden>
+    <div class="dz-note">Файлы шифруются при передаче (AES-256)</div>
+  </div>
+  <div class="section-title">Активные загрузки</div>
+  <div class="uploads" id="uploadsList"></div>
+  <div class="section-title">Последние загрузки</div>
+  <div class="file-list">
+    ${recent.length ? recent.map(f => fileRow(f)).join('') : `<div class="empty-mini">Вы ещё не загружали файлы</div>`}
+  </div>`;
+}
+function bindUploadView() {
+  const dz = $('#dropzone'), input = $('#fileInput'), pick = $('#pickBtn');
+  pick.addEventListener('click', e => { e.stopPropagation(); input.click(); });
+  dz.addEventListener('click', () => input.click());
+  input.addEventListener('change', () => { handleFiles(Array.from(input.files)); input.value = ''; });
+  bindDropzone(dz, files => handleFiles(files));
+  renderUploads();
+}
+
+/* ---------- ВИД: МОИ ЗАГРУЗКИ ---------- */
+function viewFiles() {
+  const files = [...state.files].sort((a, b) => b.uploadedAt - a.uploadedAt);
+  const total = files.reduce((s, f) => s + f.size, 0);
+  return `
+  <div class="view-head row">
+    <div>
+      <h1>Мои загрузки</h1>
+      <p class="sub">${files.length ? `Всего файлов: ${files.length} · ${fmtSize(total)}` : 'Здесь появятся ваши файлы'}</p>
+    </div>
+    <button class="btn btn-primary" id="goUploadBtn">${icon('upload', 16)} Загрузить</button>
+  </div>
+  <div class="file-list">
+    ${files.length ? files.map(f => fileRow(f)).join('') : `
+      <div class="empty"><div class="em-ico">${icon('file', 26)}</div>
+      <h3>Файлов пока нет</h3><p>Загрузите первый файл — он появится здесь</p></div>`}
+  </div>`;
+}
+function bindFilesView() { $('#goUploadBtn').addEventListener('click', () => go('upload')); }
+
+/* ---------- ВИД: МОИ ПРОЕКТЫ ---------- */
+function viewProjects() {
+  return `
+  <div class="view-head row">
+    <div><h1>Мои проекты</h1><p class="sub">Группируйте файлы и работайте над ними вместе с командой</p></div>
+    <button class="btn btn-primary" id="newProjectBtn">${icon('plus', 16)} Создать проект</button>
+  </div>
+  <div class="project-grid">
+    ${state.projects.length ? state.projects.map(projectCard).join('') : `
+      <div class="empty" style="grid-column:1/-1">
+        <div class="em-ico">${icon('folder', 26)}</div>
+        <h3>Проектов пока нет</h3><p>Создайте первый проект, чтобы объединить файлы и команду</p>
+      </div>`}
+  </div>`;
+}
+function projectCard(p) {
+  const files = state.files.filter(f => f.projectId === p.id);
+  return `<button class="project-card" data-pid="${p.id}">
+    <div class="pc-icon">${icon('folder', 21)}</div>
+    <div class="pc-name">${esc(p.name)}</div>
+    <div class="pc-desc">${esc(p.description || 'Без описания')}</div>
+    <div class="pc-foot">
+      <span>${files.length} файл(ов) · ${p.members.length} участн.</span>
+      <span class="pc-avatars">${p.members.slice(0, 3).map(m => `<span class="avatar-mini">${esc(initials(m.name))}</span>`).join('')}</span>
+    </div>
+  </button>`;
+}
+function bindProjectsView() {
+  $('#newProjectBtn').addEventListener('click', createProjectModal);
+  $$('[data-pid]').forEach(c => c.addEventListener('click', () => go('project', { id: c.dataset.pid })));
+}
+
+/* ---------- ВИД: ПРОЕКТ ---------- */
+function viewProject(id) {
+  const p = state.projects.find(x => x.id === id);
+  if (!p) return `<div class="empty"><h3>Проект не найден</h3><p>Возможно, он был удалён</p></div>`;
+
+  const files = state.files.filter(f => f.projectId === p.id).sort((a, b) => b.uploadedAt - a.uploadedAt);
+  const isAdmin = p.adminId === state.user.id;
+
+  /* === Блок статистики: значения пересчитываются на каждом рендере === */
+  const totalSize = files.reduce((s, f) => s + (f.size || 0), 0);
+  const filesCount = files.length;
+  const membersCount = p.members.length;
+
+  return `
+  <button class="back-link" id="backToProjects">${icon('chevron-left', 15, 2.4)} Все проекты</button>
+  <div class="view-head row" style="margin-top:14px">
+    <div>
+      <h1>${esc(p.name)}</h1>
+      <p class="sub">${esc(p.description || 'Без описания')} · создан ${fmtDate(p.createdAt)}</p>
+    </div>
+    ${isAdmin ? `<button class="btn-icon" id="projMenuBtn" title="Действия">${icon('more', 18)}</button>` : ''}
+  </div>
+
+  <div class="section-title">Файлы проекта</div>
+  <div class="dropzone small" id="projDropzone">
+    <div class="dz-icon" style="width:48px;height:48px;border-radius:15px">${icon('upload', 22)}</div>
+    <div class="dz-title" style="font-size:15px">Перетащите файлы или нажмите, чтобы выбрать</div>
+    <div class="dz-hint" style="margin-bottom:0">Файлы попадут напрямую в проект «${esc(p.name)}»</div>
+    <input type="file" id="projFileInput" multiple hidden>
+  </div>
+  <div class="uploads" id="projUploads" style="margin-top:10px"></div>
+  <div class="file-list" style="margin-top:12px" id="projFileList">
+    ${files.length ? files.map(f => fileRow(f, true)).join('') : `
+      <div class="empty"><div class="em-ico">${icon('file', 24)}</div>
+      <h3>В проекте нет файлов</h3><p>Загрузите первый файл в проект</p></div>`}
+  </div>
+
+  <!-- === СТАТИСТИКА ПРОЕКТА (дизайн как в «Профиле») === -->
+  <div class="stat-grid">
+    <div class="stat">
+      <b>${filesCount}</b>
+      <span>Загружено файлов</span>
+    </div>
+    <div class="stat">
+      <b>${fmtSize(totalSize)}</b>
+      <span>Общий объём</span>
+    </div>
+    <div class="stat">
+      <b>${membersCount}</b>
+      <span>Участников</span>
+    </div>
+  </div>
+
+  <div class="section-title">Участники (${p.members.length})</div>
+  <div id="membersList">${p.members.map(m => memberRow(p, m, isAdmin)).join('')}</div>
+
+  ${isAdmin ? `
+  <div class="section-title">Добавить пользователя в проект</div>
+  <div class="card">
+    <label class="field"><span>ID пользователя</span>
+      <input id="memberIdInput" placeholder="Например: 1041" inputmode="numeric"></label>
+    <div class="role-choice">
+      <button class="role-opt sel" data-role="editor" type="button">
+        <div class="rt">✏️ Редактор</div>
+        <div class="rd">Может загружать новые файлы, удалять старые файлы, скачивать файлы</div>
+      </button>
+      <button class="role-opt" data-role="viewer" type="button">
+        <div class="rt">👁️ Зритель</div>
+        <div class="rd">Может только просматривать содержимое проекта</div>
+      </button>
+    </div>
+    <button class="btn btn-primary btn-block" id="addMemberBtn">${icon('plus', 16)} Добавить в проект</button>
+  </div>` : ''}`;
+}
+function memberRow(p, m, isAdmin) {
+  const roleLabel = { admin:'Администратор', editor:'Редактор', viewer:'Зритель' }[m.role];
+  const canManage = isAdmin && m.id !== state.user.id;
+  return `<div class="member-row" data-mid="${m.id}">
+    <div class="avatar-mini">${esc(initials(m.name))}</div>
+    <div class="info">
+      <div class="nm">${esc(m.name)} <span class="role-pill ${m.role}">${roleLabel}</span></div>
+      <div class="id">ID #${m.id}${m.email ? ' · ' + esc(m.email) : ''}</div>
+    </div>
+    ${canManage ? `
+      <select class="member-role-select" data-mid="${m.id}">
+        <option value="editor" ${m.role === 'editor' ? 'selected' : ''}>Редактор</option>
+        <option value="viewer" ${m.role === 'viewer' ? 'selected' : ''}>Зритель</option>
+      </select>
+      <button class="btn-icon danger" data-remove-member="${m.id}" title="Удалить из проекта">${icon('trash', 16)}</button>
+    ` : ''}
+  </div>`;
+}
+function bindProjectView(id) {
+  const p = state.projects.find(x => x.id === id);
+  if (!p) return;
+  $('#backToProjects').addEventListener('click', () => go('projects'));
+
+  const menuBtn = $('#projMenuBtn');
+  if (menuBtn) {
+    menuBtn.addEventListener('click', e => {
+      popup(e.currentTarget, [
+        { icon:'edit',  label:'Редактировать проект', onClick: () => editProjectModal(p) },
+        { sep: true },
+        { icon:'trash', label:'Удалить проект', danger: true, onClick: () => confirmDeleteProject(p) },
+      ]);
+    });
+  }
+
+  const dz = $('#projDropzone'), inp = $('#projFileInput');
+  dz.addEventListener('click', () => inp.click());
+  inp.addEventListener('change', () => { handleFiles(Array.from(inp.files), p.id); inp.value = ''; });
+  bindDropzone(dz, files => handleFiles(files, p.id));
+
+  let role = 'editor';
+  $$('#viewRoot .role-opt').forEach(b => b.addEventListener('click', () => {
+    $$('#viewRoot .role-opt').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel');
+    role = b.dataset.role;
+  }));
+
+  const addBtn = $('#addMemberBtn');
+  if (addBtn) {
+    addBtn.addEventListener('click', () => {
+      const raw = $('#memberIdInput').value.trim().replace(/\D/g, '');
+      if (!raw) return toast('Введите ID пользователя', 'err');
+      const mid = Number(raw);
+      if (mid === state.user.id) return toast('Вы уже администратор проекта', 'err');
+      if (p.members.some(m => m.id === mid)) return toast('Этот пользователь уже в проекте', 'err');
+      const known = state.registry.find(u => u.id === mid);
+      p.members.push({
+        id: mid,
+        name: known ? known.name : 'Пользователь #' + mid,
+        email: known ? known.email : '',
+        role,
+      });
+      save();
+      addNotif('access', 'Новый участник проекта',
+        `Пользователь #${mid} добавлен в проект «${p.name}» с ролью «${role === 'editor' ? 'Редактор' : 'Зритель'}»`);
+      toast(`Пользователь #${mid} добавлен в проект`, 'ok');
+      renderView();
+    });
+  }
+
+  $$('#viewRoot .member-role-select').forEach(sel => sel.addEventListener('change', () => {
+    const m = p.members.find(x => x.id === Number(sel.dataset.mid));
+    if (!m) return;
+    m.role = sel.value;
+    save();
+    toast(`Роль обновлена: ${sel.value === 'editor' ? 'Редактор' : 'Зритель'}`, 'ok');
+    renderView();
+  }));
+
+  $$('#viewRoot [data-remove-member]').forEach(b => b.addEventListener('click', () => {
+    const mid = Number(b.dataset.removeMember);
+    const m = p.members.find(x => x.id === mid);
+    const mo = modal(`
+      <div class="modal-head"><h3>Удалить участника?</h3>
+        <button class="btn-icon" data-close>${icon('x', 16)}</button></div>
+      <div class="modal-body"><p>Пользователь <b>${esc(m ? m.name : '#' + mid)}</b> потеряет доступ к проекту «${esc(p.name)}».</p></div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" data-close>Отмена</button>
+        <button class="btn btn-danger" id="okRemove">Удалить</button>
+      </div>`);
+    mo.el.querySelector('#okRemove').addEventListener('click', () => {
+      p.members = p.members.filter(x => x.id !== mid);
+      save(); mo.close();
+      toast('Участник удалён из проекта', 'info');
+      renderView();
+    });
+  }));
+
+  renderUploads();
+}
+
+/* ---------- ВИД: ПРОФИЛЬ ---------- */
+function viewProfile() {
+  const u = state.user;
+  const totalSize = state.files.reduce((s, f) => s + f.size, 0);
+  const inProjects = state.projects.reduce((s, p) => s + p.members.length, 0);
+  return `
+  <div class="profile-cover"></div>
+  <div class="profile-body">
+    <div class="profile-head">
+      <div class="avatar-lg">${esc(initials(u.name))}</div>
+      <div style="flex:1;min-width:200px">
+        <h1 class="profile-name">${esc(u.name)}</h1>
+        <div class="id-chip" id="copyIdChip" title="Скопировать ID">${icon('shield', 13)} ID #${u.id}</div>
+      </div>
+      <button class="btn btn-ghost" id="editProfileBtn">${icon('edit', 15)} Редактировать</button>
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><b>${state.files.length}</b><span>Загружено файлов</span></div>
+      <div class="stat"><b>${state.projects.length}</b><span>Проектов</span></div>
+      <div class="stat"><b>${fmtSize(totalSize)}</b><span>Общий объём</span></div>
+      <div class="stat"><b>${inProjects}</b><span>Участников</span></div>
+    </div>
+    <div class="section-title">Информация об аккаунте</div>
+    <div class="card">
+      <div class="info-list">
+        <div class="info-row"><span class="k">${icon('mail', 16)} Email</span><span class="v">${esc(u.email)}</span></div>
+        <div class="info-row"><span class="k">${icon('shield', 16)} ID пользователя</span><span class="v">#${u.id}</span></div>
+        <div class="info-row"><span class="k">${icon('user', 16)} Способ входа</span><span class="v">${esc(u.provider)}</span></div>
+        <div class="info-row"><span class="k">${icon('cal', 16)} Дата регистрации</span><span class="v">${fmtDate(u.registeredAt)}</span></div>
+        <div class="info-row"><span class="k">${icon('clock', 16)} Последний вход</span><span class="v">${fmtDateTime(Date.now())}</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+function bindProfileView() {
+  $('#copyIdChip').addEventListener('click', () => {
+    const text = 'ID #' + state.user.id;
+    navigator.clipboard?.writeText(String(state.user.id));
+    toast('ID скопирован: ' + text, 'ok');
+  });
+  $('#editProfileBtn').addEventListener('click', () => {
+    const m = modal(`
+      <div class="modal-head"><h3>Редактировать профиль</h3>
+        <button class="btn-icon" data-close>${icon('x', 16)}</button></div>
+      <div class="modal-body">
+        <label class="field"><span>Имя и фамилия</span>
+          <input id="pfName" value="${esc(state.user.name)}"></label>
+        <label class="field"><span>Email</span>
+          <input id="pfEmail" type="email" value="${esc(state.user.email)}"></label>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" data-close>Отмена</button>
+        <button class="btn btn-primary" id="pfSave">Сохранить</button>
+      </div>`);
+    m.el.querySelector('#pfSave').addEventListener('click', () => {
+      const name = m.el.querySelector('#pfName').value.trim();
+      const email = m.el.querySelector('#pfEmail').value.trim();
+      if (!name) return toast('Имя не может быть пустым', 'err');
+      state.user.name = name;
+      state.user.email = email || state.user.email;
+      const reg = state.registry.find(x => x.id === state.user.id);
+      if (reg) { reg.name = state.user.name; reg.email = state.user.email; }
+      save(); m.close(); renderView(); updateUserUI();
+      toast('Профиль обновлён', 'ok');
+    });
+  });
+}
+
+/* ---------- ВИД: НАСТРОЙКИ ---------- */
+function viewSettings() {
+  return `
+  <div class="view-head"><h1>Настройки</h1><p class="sub">Персонализация и управление аккаунтом</p></div>
+  <div class="section-title">Внешний вид</div>
+  <div class="setting-row">
+    <div class="info"><div class="t">Тема оформления</div><div class="d">Тёмная или светлая тема интерфейса</div></div>
+    <div class="seg">
+      <button data-theme-set="light" class="${state.theme === 'light' ? 'on' : ''}">Светлая</button>
+      <button data-theme-set="dark"  class="${state.theme === 'dark'  ? 'on' : ''}">Тёмная</button>
+    </div>
+  </div>
+  <div class="section-title">Уведомления</div>
+  <div class="setting-row">
+    <div class="info"><div class="t">Вход в аккаунт</div><div class="d">Уведомлять о новых входах с устройств</div></div>
+    <div class="switch ${state.prefs.login ? 'on' : ''}" data-pref="login"></div>
+  </div>
+  <div class="setting-row">
+    <div class="info"><div class="t">Загрузка файлов</div><div class="d">Успешные и неудачные загрузки</div></div>
+    <div class="switch ${state.prefs.upload ? 'on' : ''}" data-pref="upload"></div>
+  </div>
+  <div class="setting-row">
+    <div class="info"><div class="t">Новые файлы в проектах</div><div class="d">Когда участник добавляет файл в проект</div></div>
+    <div class="switch ${state.prefs.project ? 'on' : ''}" data-pref="project"></div>
+  </div>
+  <div class="setting-row">
+    <div class="info"><div class="t">Выдача доступа</div><div class="d">Когда вам выдают доступ к файлу</div></div>
+    <div class="switch ${state.prefs.access ? 'on' : ''}" data-pref="access"></div>
+  </div>
+  <div class="section-title">Данные</div>
+  <div class="setting-row">
+    <div class="info"><div class="t">Сбросить демо-данные</div><div class="d">Удалить все файлы, проекты и уведомления</div></div>
+    <button class="btn btn-soft" id="resetBtn">Сбросить</button>
+  </div>
+  <div class="setting-row danger-zone">
+    <div class="info"><div class="t">Выйти из аккаунта</div><div class="d">Завершить текущую сессию</div></div>
+    <button class="btn btn-danger" id="logoutBtn">Выйти</button>
+  </div>`;
+}
+function bindSettingsView() {
+  $$('#viewRoot [data-theme-set]').forEach(b => b.addEventListener('click', () => {
+    state.theme = b.dataset.themeSet;
+    applyTheme(); save(); renderView();
+  }));
+  $$('#viewRoot [data-pref]').forEach(s => s.addEventListener('click', () => {
+    const k = s.dataset.pref;
+    state.prefs[k] = !state.prefs[k];
+    s.classList.toggle('on', state.prefs[k]);
+    save();
+  }));
+  $('#resetBtn').addEventListener('click', () => {
+    const m = modal(`
+      <div class="modal-head"><h3>Сбросить данные?</h3>
+        <button class="btn-icon" data-close>${icon('x', 16)}</button></div>
+      <div class="modal-body"><p>Все файлы, проекты и уведомления будут удалены безвозвратно.</p></div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" data-close>Отмена</button>
+        <button class="btn btn-danger" id="okReset">Сбросить</button>
+      </div>`);
+    m.el.querySelector('#okReset').addEventListener('click', () => {
+      state.files = []; state.projects = []; state.notifications = [];
+      blobs.clear(); activeUploads.length = 0;
+      save(); m.close(); updateUserUI(); renderBadge(); renderView();
+      toast('Данные сброшены', 'info');
+    });
+  });
+  $('#logoutBtn').addEventListener('click', () => {
+    state.user = null;
+    save();
+    showScreen('landing');
+    toast('Вы вышли из аккаунта', 'info');
+  });
+}
+
+/* ============================================================
+   12. ФАЙЛЫ
+   ============================================================ */
+function fileRow(f, projectMode = false) {
+  const tags = (f.tags || []).length
+    ? f.tags.map(t => `<span class="tag">#${esc(t)}</span>`).join(' ')
+    : '';
+  return `<div class="file-row" data-fid="${f.id}">
+    <div class="file-ico">${icon('file', 19)}</div>
+    <div class="file-info">
+      <div class="file-name">${esc(f.name)}</div>
+      <div class="file-meta">
+        <span>${fmtSize(f.size)}</span><span>·</span><span>${timeAgo(f.uploadedAt)}</span>
+        ${projectMode ? '' : `<span>·</span><span>${accessLabel(f.access)}</span>`}
+        ${f.description ? `<span>·</span><span>${esc(f.description).slice(0, 40)}</span>` : ''}
+        ${tags}
+      </div>
+    </div>
+    <div class="file-actions">
+      <button class="btn btn-soft" data-dl="${f.id}" title="Скачать файл">
+        ${icon('download', 15)}<span class="hide-sm">Скачать</span>
+      </button>
+      <button class="btn-icon" data-more="${f.id}" title="Ещё">${icon('more', 17)}</button>
+    </div>
+  </div>`;
+}
+function bindFileActions() {
+  const root = $('#viewRoot');
+  root.querySelectorAll('[data-dl]').forEach(b =>
+    b.addEventListener('click', e => { e.stopPropagation(); downloadFile(b.dataset.dl); }));
+  root.querySelectorAll('[data-more]').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation();
+    const f = state.files.find(x => x.id === b.dataset.more);
+    if (!f) return;
+    const items = f.projectId
+      ? [
+          { icon:'download', label:'Скачать файл', onClick: () => downloadFile(f.id) },
+          { icon:'edit',     label:'Редактировать', onClick: () => editFileModal(f) },
+          { sep: true },
+          { icon:'trash',    label:'Удалить', danger: true, onClick: () => confirmDeleteFile(f) },
+        ]
+      : [
+          { icon:'download', label:'Скачать файл',  onClick: () => downloadFile(f.id) },
+          { icon:'edit',     label:'Редактировать',  onClick: () => editFileModal(f) },
+          { icon:'shield',   label:'Выдать доступ',  onClick: () => grantAccessModal(f) },
+          { sep: true },
+          { icon:'trash',    label:'Удалить', danger: true, onClick: () => confirmDeleteFile(f) },
+        ];
+    popup(b, items);
+  }));
+}
+function downloadFile(id) {
+  const f = state.files.find(x => x.id === id);
+  if (!f) return;
+  const blob = blobs.get(id);
+  let url, name = f.name;
+  if (blob) {
+    url = URL.createObjectURL(blob);
+  } else {
+    const txt = `OURA DROP ME FILES
+============================
+
+Файл:      ${f.name}
+Размер:    ${fmtSize(f.size)}
+Загружен:  ${fmtDateTime(f.uploadedAt)}
+Доступ:    ${accessLabel(f.access)}
+Теги:      ${(f.tags || []).join(', ') || '—'}
+Описание:  ${f.description || '—'}
+
+Это демонстрационная копия. Оригинал был загружен
+в текущей сессии браузера и недоступен после перезагрузки.`;
+    url = URL.createObjectURL(new Blob([txt], { type: 'text/plain' }));
+    name = f.name.replace(/(\.[^.]+)?$/, '') + '.txt';
+  }
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  toast('Скачивание: ' + f.name, 'ok');
+}
+function confirmDeleteFile(f) {
+  const m = modal(`
+    <div class="modal-head"><h3>Удаление файла</h3>
+      <button class="btn-icon" data-close>${icon('x', 16)}</button></div>
+    <div class="modal-body">
+      <p>Вы уверены, что хотите удалить этот файл?</p>
+      <div class="file-row" style="pointer-events:none">
+        <div class="file-ico">${icon('file', 18)}</div>
+        <div class="file-info">
+          <div class="file-name">${esc(f.name)}</div>
+          <div class="file-meta"><span>${fmtSize(f.size)}</span><span>·</span><span>${fmtDateTime(f.uploadedAt)}</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close>Отмена</button>
+      <button class="btn btn-danger" id="okDel">Удалить</button>
+    </div>`);
+  m.el.querySelector('#okDel').addEventListener('click', () => {
+    state.files = state.files.filter(x => x.id !== f.id);
+    blobs.delete(f.id);
+    save(); m.close(); updateUserUI(); renderView();
+    toast('Файл удалён', 'info');
+  });
+}
+const EXPIRY_OPTS = ['7 дней', '30 дней', '90 дней', '1 год', 'Бессрочно'];
+function editFileModal(f) {
+  const isProject = !!f.projectId;
+  const expOpts = EXPIRY_OPTS.map(o => `<option ${f.expiry === o ? 'selected' : ''}>${o}</option>`).join('');
+  const m = modal(`
+    <div class="modal-head"><h3>Редактирование файла</h3>
+      <button class="btn-icon" data-close>${icon('x', 16)}</button></div>
+    <div class="modal-body">
+      <label class="field"><span>Название файла</span>
+        <input id="efName" value="${esc(f.name)}"></label>
+      <label class="field"><span>Описание файла</span>
+        <textarea id="efDesc" rows="2" placeholder="Краткое описание...">${esc(f.description || '')}</textarea></label>
+      <label class="field"><span>Срок хранения</span>
+        <select id="efExpiry">${expOpts}</select></label>
+      ${isProject ? `
+        <label class="field"><span>Кто может скачивать файл</span>
+          <select id="efWhoDl">
+            <option value="all"     ${f.whoDownload === 'all'     ? 'selected' : ''}>Все участники проекта</option>
+            <option value="editors" ${f.whoDownload === 'editors' ? 'selected' : ''}>Только редакторы</option>
+            <option value="admin"   ${f.whoDownload === 'admin'   ? 'selected' : ''}>Только администратор</option>
+          </select></label>
+        <label class="field"><span>Кто может редактировать файл</span>
+          <select id="efWhoEd">
+            <option value="editors" ${f.whoEdit === 'editors' ? 'selected' : ''}>Редакторы и администратор</option>
+            <option value="admin"   ${f.whoEdit === 'admin'   ? 'selected' : ''}>Только администратор</option>
+          </select></label>
+      ` : `
+        <label class="field"><span>Уровень доступа</span>
+          <select id="efAccess">
+            <option value="private" ${f.access === 'private' ? 'selected' : ''}>Приватный — только вы</option>
+            <option value="link"    ${f.access === 'link'    ? 'selected' : ''}>По ссылке — у кого есть ссылка</option>
+            <option value="public"  ${f.access === 'public'  ? 'selected' : ''}>Публичный — доступен всем</option>
+          </select></label>
+      `}
+      <label class="field"><span>Теги (через запятую)</span>
+        <input id="efTags" value="${esc((f.tags || []).join(', '))}" placeholder="работа, отчёт, 2025"></label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close>Отмена</button>
+      <button class="btn btn-primary" id="efSave">Сохранить</button>
+    </div>`, { wide: true });
+  m.el.querySelector('#efSave').addEventListener('click', () => {
+    const name = m.el.querySelector('#efName').value.trim();
+    if (!name) return toast('Название не может быть пустым', 'err');
+    f.name = name;
+    f.description = m.el.querySelector('#efDesc').value.trim();
+    f.expiry = m.el.querySelector('#efExpiry').value;
+    f.tags = m.el.querySelector('#efTags').value.split(',').map(t => t.trim()).filter(Boolean).slice(0, 8);
+    if (isProject) {
+      f.whoDownload = m.el.querySelector('#efWhoDl').value;
+      f.whoEdit = m.el.querySelector('#efWhoEd').value;
+    } else {
+      f.access = m.el.querySelector('#efAccess').value;
+    }
+    save(); m.close(); renderView();
+    toast('Изменения сохранены', 'ok');
+  });
+}
+function grantAccessModal(f) {
+  const m = modal(`
+    <div class="modal-head"><h3>Выдать доступ</h3>
+      <button class="btn-icon" data-close>${icon('x', 16)}</button></div>
+    <div class="modal-body">
+      <p>Предоставьте другому пользователю доступ к файлу «${esc(f.name)}»</p>
+      <label class="field"><span>ID пользователя</span>
+        <input id="gaId" placeholder="Например: 1042" inputmode="numeric"></label>
+      <label class="field"><span>Права доступа</span>
+        <select id="gaPerm">
+          <option value="view">Просмотр</option>
+          <option value="download" selected>Скачивание</option>
+          <option value="edit">Редактирование</option>
+        </select></label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close>Отмена</button>
+      <button class="btn btn-primary" id="gaOk">Выдать доступ</button>
+    </div>`);
+  m.el.querySelector('#gaOk').addEventListener('click', () => {
+    const raw = m.el.querySelector('#gaId').value.trim().replace(/\D/g, '');
+    if (!raw) return toast('Введите ID пользователя', 'err');
+    const perm = m.el.querySelector('#gaPerm').value;
+    const permLabel = { view:'просмотр', download:'скачивание', edit:'редактирование' }[perm];
+    m.close();
+    addNotif('access', 'Выдан доступ к файлу',
+      `Пользователю #${raw} выдан доступ (${permLabel}) к файлу «${f.name}»`);
+    toast(`Доступ выдан пользователю #${raw}`, 'ok');
+  });
+}
+
+/* ============================================================
+   13. ЗАГРУЗКА ФАЙЛОВ
+   ============================================================ */
+function bindDropzone(dz, onFiles) {
+  ['dragenter', 'dragover'].forEach(ev =>
+    dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dz.classList.add('drag'); }));
+  ['dragleave', 'drop'].forEach(ev =>
+    dz.addEventListener(ev, e => {
+      e.preventDefault(); e.stopPropagation();
+      if (ev === 'dragleave' && dz.contains(e.relatedTarget)) return;
+      dz.classList.remove('drag');
+    }));
+  dz.addEventListener('drop', e => {
+    const files = Array.from(e.dataTransfer.files || []);
+    if (files.length) onFiles(files);
+  });
+}
+function handleFiles(files, projectId = null) {
+  if (!files.length) return;
+  files.forEach(f => {
+    if (f.size > 2 * 1024 * 1024 * 1024) {
+      addNotif('upload_err', 'Загрузка не удалась', `Файл «${f.name}» превышает лимит 2 ГБ`);
+      toast(`Файл слишком большой: ${f.name}`, 'err');
+      return;
+    }
+    startUpload(f, projectId);
+  });
+}
+function startUpload(file, projectId) {
+  const task = {
+    id: uid(), name: file.name, size: file.size || 1024, pct: 0, eta: 0,
+    done: false, canceled: false, projectId, timer: null,
+  };
+  activeUploads.unshift(task);
+  renderUploads();
+  const total = Math.max(task.size, 1);
+  const speed = (280 + Math.random() * 900) * 1024;
+  let loaded = 0;
+  task.timer = setInterval(() => {
+    if (task.canceled) return;
+    loaded = Math.min(total, loaded + speed * 0.12 * (0.55 + Math.random() * 0.9));
+    task.pct = (loaded / total) * 100;
+    task.eta = (total - loaded) / speed;
+    updateUploadDOM(task);
+    if (loaded >= total) {
+      clearInterval(task.timer);
+      task.done = true; task.pct = 100; task.eta = 0;
+      updateUploadDOM(task);
+      setTimeout(() => finishUpload(task, file, projectId), 380);
+    }
+  }, 120);
+}
+function finishUpload(task, file, projectId) {
+  if (task.canceled) return;
+  const rec = {
+    id: uid(), name: file.name, size: file.size, type: file.type || 'application/octet-stream',
+    uploadedAt: Date.now(), description: '', tags: [], expiry: '30 дней', access: 'private',
+    whoDownload: 'all', whoEdit: 'editors', projectId: projectId || null, ownerId: state.user.id,
+  };
+  state.files.push(rec);
+  blobs.set(rec.id, file);
+  save();
+  if (projectId) {
+    const p = state.projects.find(x => x.id === projectId);
+    addNotif('project', 'Новый файл в проекте', `Файл «${file.name}» загружен в проект «${p ? p.name : ''}»`);
+  } else {
+    addNotif('upload_ok', 'Файл успешно загружен',
+      `«${file.name}» (${fmtSize(file.size)}) доступен в разделе «Мои загрузки»`);
+  }
+  const i = activeUploads.indexOf(task);
+  if (i > -1) activeUploads.splice(i, 1);
+  updateUserUI(); renderUploads();
+  if (['upload', 'files', 'project'].includes(route.name)) renderView();
+  toast(`Загружено: ${file.name}`, 'ok');
+}
+function uploadItemHTML(u) {
+  return `<div class="upload-item" data-uid="${u.id}">
+    <div class="upload-top">
+      <div class="file-ico" style="width:38px;height:38px;border-radius:11px">${icon('file', 17)}</div>
+      <div class="upload-meta">
+        <div class="upload-name">${esc(u.name)}</div>
+        <div class="upload-sub">${fmtSize(u.size)} · ${u.done ? 'Завершено' : 'осталось ' + fmtTime(u.eta)}</div>
+      </div>
+      <div class="upload-pct">${Math.floor(u.pct)}%</div>
+      <button class="btn-icon danger" data-cancel="${u.id}" title="Отменить загрузку">${icon('x', 16)}</button>
+    </div>
+    <div class="progress"><div class="progress-bar" style="width:${u.pct}%"></div></div>
+  </div>`;
+}
+function renderUploads() {
+  const box = $('#uploadsList');
+  if (box) {
+    box.innerHTML = activeUploads.length
+      ? activeUploads.map(uploadItemHTML).join('')
+      : '<div class="empty-mini">Нет активных загрузок</div>';
+  }
+  const pbox = $('#projUploads');
+  if (pbox) {
+    const pid = route.params.id;
+    const items = activeUploads.filter(u => u.projectId === pid);
+    pbox.innerHTML = items.map(uploadItemHTML).join('');
+  }
+}
+function updateUploadDOM(u) {
+  const el = document.querySelector(`.upload-item[data-uid="${u.id}"]`);
+  if (!el) { renderUploads(); return; }
+  const bar = el.querySelector('.progress-bar');
+  const pct = el.querySelector('.upload-pct');
+  const sub = el.querySelector('.upload-sub');
+  if (bar) bar.style.width = u.pct + '%';
+  if (pct) pct.textContent = Math.floor(u.pct) + '%';
+  if (sub) sub.textContent = `${fmtSize(u.size)} · ${u.done ? 'Завершено' : 'осталось ' + fmtTime(u.eta)}`;
+}
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-cancel]');
+  if (!btn) return;
+  e.stopPropagation();
+  const task = activeUploads.find(t => t.id === btn.dataset.cancel);
+  if (!task) return;
+  task.canceled = true;
+  clearInterval(task.timer);
+  const idx = activeUploads.indexOf(task);
+  if (idx > -1) activeUploads.splice(idx, 1);
+  renderUploads();
+  addNotif('upload_err', 'Загрузка отменена', `Загрузка файла «${task.name}» была отменена пользователем`);
+  toast('Загрузка отменена', 'info');
+});
+
+/* ============================================================
+   14. ПРОЕКТЫ: CRUD
+   ============================================================ */
+function createProjectModal() {
+  const m = modal(`
+    <div class="modal-head"><h3>Новый проект</h3>
+      <button class="btn-icon" data-close>${icon('x', 16)}</button></div>
+    <div class="modal-body">
+      <label class="field"><span>Название проекта</span>
+        <input id="npName" placeholder="Например: Маркетинг 2025" maxlength="60"></label>
+      <label class="field"><span>Описание проекта</span>
+        <textarea id="npDesc" rows="3" placeholder="Расскажите, для чего этот проект"></textarea></label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close>Отмена</button>
+      <button class="btn btn-primary" id="npCreate">Создать</button>
+    </div>`);
+  setTimeout(() => m.el.querySelector('#npName').focus(), 200);
+  m.el.querySelector('#npCreate').addEventListener('click', () => {
+    const name = m.el.querySelector('#npName').value.trim();
+    if (!name) return toast('Введите название проекта', 'err');
+    const p = {
+      id: uid(), name, description: m.el.querySelector('#npDesc').value.trim(),
+      createdAt: Date.now(), adminId: state.user.id,
+      members: [{ id: state.user.id, name: state.user.name, email: state.user.email, role: 'admin' }],
+    };
+    state.projects.push(p);
+    save(); m.close(); updateUserUI(); renderView();
+    toast('Проект создан', 'ok');
+  });
+}
+function editProjectModal(p) {
+  const m = modal(`
+    <div class="modal-head"><h3>Редактировать проект</h3>
+      <button class="btn-icon" data-close>${icon('x', 16)}</button></div>
+    <div class="modal-body">
+      <label class="field"><span>Название проекта</span>
+        <input id="epName" value="${esc(p.name)}"></label>
+      <label class="field"><span>Описание проекта</span>
+        <textarea id="epDesc" rows="3">${esc(p.description || '')}</textarea></label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close>Отмена</button>
+      <button class="btn btn-primary" id="epSave">Сохранить</button>
+    </div>`);
+  m.el.querySelector('#epSave').addEventListener('click', () => {
+    const n = m.el.querySelector('#epName').value.trim();
+    if (!n) return toast('Название не может быть пустым', 'err');
+    p.name = n;
+    p.description = m.el.querySelector('#epDesc').value.trim();
+    save(); m.close(); renderView();
+    toast('Проект обновлён', 'ok');
+  });
+}
+function confirmDeleteProject(p) {
+  const m = modal(`
+    <div class="modal-head"><h3>Удалить проект?</h3>
+      <button class="btn-icon" data-close>${icon('x', 16)}</button></div>
+    <div class="modal-body"><p>Проект «${esc(p.name)}» и все файлы внутри будут удалены безвозвратно.</p></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close>Отмена</button>
+      <button class="btn btn-danger" id="okDelP">Удалить</button>
+    </div>`);
+  m.el.querySelector('#okDelP').addEventListener('click', () => {
+    state.files.filter(f => f.projectId === p.id).forEach(f => blobs.delete(f.id));
+    state.files = state.files.filter(f => f.projectId !== p.id);
+    state.projects = state.projects.filter(x => x.id !== p.id);
+    save(); m.close(); updateUserUI(); go('projects');
+    toast('Проект удалён', 'info');
+  });
+}
+
+/* ============================================================
+   15. ПРОЧЕЕ
+   ============================================================ */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closePopup(); $('#notifPanel').classList.remove('open'); }
+});
+setInterval(() => {
+  if ($('#notifPanel').classList.contains('open')) renderNotifPanel();
+}, 30000);
+
+/* ============================================================
+   16. СТАРТ
+   ============================================================ */
+(function boot() {
+  applyTheme();
+  renderBadge();
+  if (state.user) {
+    updateUserUI();
+    showScreen('app');
+    go('upload');
+  } else {
+    showScreen('landing');
+  }
+})();
+</script>
+</body>
+</html>
